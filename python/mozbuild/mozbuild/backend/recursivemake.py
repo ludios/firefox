@@ -1961,6 +1961,13 @@ class RecursiveMakeBackend(MakeBackend):
         ``dest`` is relative to the object directory. The manifest is processed
         once per directory and tier, after every file it installs is built.
         """
+        # config/rules.mk empties SIMPLE_PROGRAMS in the MOZ_PROFILE_GENERATE
+        # (PGO instrumented) pass, so test support binaries are never built and
+        # depending on them would fail with "No rule to make target". The legacy
+        # INSTALL_TARGETS path is filtered in rules.mk; these installs bypass it.
+        in_tests = dest.startswith("_tests/")
+        if in_tests and self.environment.substs.get("MOZ_PROFILE_GENERATE"):
+            return
         self._no_skip[tier].add(backend_file.relobjdir)
         name = mozpath.join(backend_file.relobjdir, tier)
         self._built_install_manifests[name].add_link(f.full_path, dest)
