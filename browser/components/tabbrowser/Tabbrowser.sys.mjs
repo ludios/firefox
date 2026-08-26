@@ -72,9 +72,6 @@ const lazy = XPCOMUtils.declareLazy({
     "moz-src:///browser/components/sessionstore/TabSplitViewState.sys.mjs",
   TabStateFlusher:
     "moz-src:///browser/components/sessionstore/TabStateFlusher.sys.mjs",
-  TaskbarTabs: "moz-src:///browser/components/taskbartabs/TaskbarTabs.sys.mjs",
-  TaskbarTabsUtils:
-    "moz-src:///browser/components/taskbartabs/TaskbarTabsUtils.sys.mjs",
   UrlbarProviderOpenTabs:
     "moz-src:///browser/components/urlbar/UrlbarProviderOpenTabs.sys.mjs",
   UrlbarUtils: "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs",
@@ -1760,112 +1757,18 @@ export class Tabbrowser {
     }
   }
 
-  #cachedTitleInfo = null;
-  #populateTitleCache() {
-    this.#cachedTitleInfo = {};
-    for (let id of [
-      "mainWindowTitle",
-      "privateWindowTitle",
-      "privateWindowSuffixForContent",
-    ]) {
-      this.#cachedTitleInfo[id] =
-        this.document.getElementById(id)?.textContent || "";
-    }
-  }
-
-  /**
-   * The name and container of the Taskbar Tab associated with this window.
-   * This cannot change after it is first set.
-   *
-   * @type {{name: string, userContextId: number}|null}
-   */
-  #taskbarTabTitleInfo = null;
-
-  /**
-   * Determines the content of the window title that relates to the Taskbar
-   * Tab. This includes the name of the Taskbar Tab, of the container, and
-   * of the profile.
-   *
-   * If no Taskbar Tab is in use, the profile is added by
-   * getWindowTitleForBrowser and this returns null.
-   *
-   * @param {string} [aProfile]
-   *   Name of the current profile, if it should appear in the title.
-   * @returns {string|null} The part of the title that was determined from
-   * the Taskbar Tab, or null if nothing is needed.
-   */
-  #determineTaskbarTabTitle(aProfile) {
-    if (!lazy.shouldExposeContentTitle) {
-      // The Taskbar Tab and container info expose what site the user's on.
-      return null;
-    }
-
-    if (!this.#taskbarTabTitleInfo) {
-      let id = lazy.TaskbarTabsUtils.getTaskbarTabIdFromWindow(
-        this.documentGlobal
-      );
-      if (!id) {
-        return null;
-      }
-
-      lazy.TaskbarTabs.getTaskbarTabTitleInfo(id)
-        .then(info => {
-          this.#taskbarTabTitleInfo = info;
-          this.updateTitlebar();
-        })
-        .catch(() => {
-          // The taskbar tab doesn't exist; leave it as-is.
-        });
-      return null;
-    }
-
-    return lazy.TaskbarTabsUtils.createTaskbarTabTitle(
-      this.#taskbarTabTitleInfo,
-      aProfile
-    );
-  }
-
-  #determineContentTitle(browser) {
+  #determineContentTitleAndUrl(browser) {
     let title = "";
-    if (
-      !lazy.shouldExposeContentTitle ||
-      (lazy.PrivateBrowsingUtils.isWindowPrivate(this.documentGlobal) &&
-        !lazy.shouldExposeContentTitlePbm) ||
-      lazy.WindowLock.isWindowLocked(this.documentGlobal)
-    ) {
-      return title;
+    let url = "";
+    if (lazy.WindowLock.isWindowLocked(this.documentGlobal)) {
+      return { title, url };
     }
 
-    let docElement = this.document.documentElement;
-    // If location bar is hidden and the URL type supports a host,
-    // add the scheme and host to the title to prevent spoofing.
-    // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=22183#c239
     try {
-      if (
-        docElement.hasAttribute("web-extension-popup-window") ||
-        docElement.hasAttribute("chromeless-window")
-      ) {
-        const uri = Services.io.createExposableURI(browser.currentURI);
-        let prefix = uri.prePath;
-        if (uri.scheme == "about") {
-          prefix = uri.spec;
-        } else if (uri.scheme == "moz-extension") {
-          const ext = WebExtensionPolicy.getByHostname(uri.host);
-          if (ext && ext.name) {
-            let extensionLabel = this.document.getElementById(
-              "urlbar-label-extension"
-            );
-            prefix = `${extensionLabel.value} (${ext.name})`;
-          }
-        }
-        title = prefix + " - ";
-      }
+      let uri = Services.io.createExposableURI(browser.currentURI);
+      url = (uri.displaySpec || uri.spec).replace(/\0/g, "");
     } catch (e) {
       // ignored
-    }
-
-    if (docElement.hasAttribute("titlepreface")) {
-      title += docElement.getAttribute("titlepreface");
     }
 
     let tab = this.getTabForBrowser(browser);
@@ -1873,55 +1776,15 @@ export class Tabbrowser {
       // Strip out any null bytes in the content title, since the
       // underlying widget implementations of nsWindow::SetTitle pass
       // null-terminated strings to system APIs.
-      title += tab.getAttribute("label").replace(/\0/g, "");
+      title = tab.getAttribute("label").replace(/\0/g, "");
     }
-    return title;
+
+    return { title, url };
   }
 
   getWindowTitleForBrowser(browser) {
-    if (!this.#cachedTitleInfo) {
-      this.#populateTitleCache();
-    }
-    let contentTitle = this.#determineContentTitle(browser);
-    let docElement = this.document.documentElement;
-    let isTemporaryPrivateWindow =
-      docElement.getAttribute("privatebrowsingmode") == "temporary";
-
-    let profileIdentifier =
-      lazy.SelectableProfileService?.isEnabled &&
-      lazy.SelectableProfileService.getCachedProfileCount() > 1 &&
-      lazy.SelectableProfileService.currentProfile?.name.replace(/\0/g, "");
-    // Note that empty/falsy bits get filtered below.
-
-    let taskbarTabTitle = this.#determineTaskbarTabTitle(profileIdentifier);
-    let parts = [contentTitle, taskbarTabTitle ?? profileIdentifier];
-
-    // On macOS PB windows, add the private window suffix if we have a content
-    // title. We'll add the brand name and private window suffix for all other
-    // platforms below.
-    if (
-      AppConstants.platform == "macosx" &&
-      contentTitle &&
-      isTemporaryPrivateWindow
-    ) {
-      parts.push(this.#cachedTitleInfo.privateWindowSuffixForContent);
-    }
-
-    // Show the brand name if we aren't a Taskbar Tab, since that is done in
-    // #determineTaskbarTabTitle. On macOS we only do this if we don't have a
-    // content title; elsewhere, the brand becomes a suffix in the title bar.
-    if (
-      !taskbarTabTitle &&
-      (!contentTitle || AppConstants.platform != "macosx")
-    ) {
-      parts.push(
-        this.#cachedTitleInfo[
-          isTemporaryPrivateWindow ? "privateWindowTitle" : "mainWindowTitle"
-        ]
-      );
-    }
-
-    return parts.filter(p => !!p).join(" — ");
+    let { title, url } = this.#determineContentTitleAndUrl(browser);
+    return [title, url].filter(p => !!p).join(" - ");
   }
 
   updateTitlebar() {
@@ -9842,7 +9705,6 @@ export class Tabbrowser {
         break;
       }
       case "intl:app-locales-changed": {
-        this.#populateTitleCache();
         this.updateTitlebar();
         break;
       }
