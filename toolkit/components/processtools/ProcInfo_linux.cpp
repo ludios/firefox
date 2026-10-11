@@ -12,7 +12,9 @@
 #include "nsWhitespaceTokenizer.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
 
@@ -201,6 +203,103 @@ class ThreadInfoReader final : public StatReader {
   }
 };
 
+// Reads a small /proc file into aBuffer as a NUL-terminated string, without
+// the allocations of fopen() since this is done for every thread.
+static bool ReadProcFile(const char* aPath, char* aBuffer, size_t aSize) {
+  int fd = open(aPath, O_RDONLY | O_CLOEXEC);
+  if (fd < 0) {
+    return false;
+  }
+  ssize_t length = read(fd, aBuffer, aSize - 1);
+  close(fd);
+  if (length <= 0) {
+    return false;
+  }
+  aBuffer[length] = '\0';
+  return true;
+}
+
+// Returns the number following aKey on the line starting with aKey, e.g. the
+// "VmSwap:" line of /proc/<pid>/status.
+static Maybe<uint64_t> FindProcFileValue(const char* aContent,
+                                         const char* aKey) {
+  size_t keyLength = strlen(aKey);
+  for (const char* line = aContent; line; line = strchr(line, '\n')) {
+    if (*line == '\n') {
+      line++;
+    }
+    if (!strncmp(line, aKey, keyLength)) {
+      return Some(uint64_t(strtoull(line + keyLength, nullptr, 10)));
+    }
+  }
+  return Nothing();
+}
+
+static void ReadExtendedProcessInfo(base::ProcessId aPid, ProcInfo& aInfo) {
+  char path[64];
+  char buffer[4096];
+
+  SprintfLiteral(path, "/proc/%u/status", unsigned(aPid));
+  if (ReadProcFile(path, buffer, sizeof(buffer))) {
+    if (Maybe<uint64_t> swapKB = FindProcFileValue(buffer, "VmSwap:")) {
+      aInfo.swap = Some(*swapKB * 1024);
+    }
+  }
+
+  // This requires ptrace access to the process, which sandboxing may deny.
+  SprintfLiteral(path, "/proc/%u/io", unsigned(aPid));
+  if (ReadProcFile(path, buffer, sizeof(buffer))) {
+    aInfo.diskReadBytes = FindProcFileValue(buffer, "read_bytes:");
+    aInfo.diskWriteBytes = FindProcFileValue(buffer, "write_bytes:");
+  }
+
+  SprintfLiteral(path, "/proc/%u/stat", unsigned(aPid));
+  if (ReadProcFile(path, buffer, sizeof(buffer))) {
+    // The command name may contain spaces and parentheses, so start parsing
+    // after the last parenthesis. We want fields 12 (majflt) and 22
+    // (starttime), see proc_pid_stat(5).
+    const char* fields = strrchr(buffer, ')');
+    unsigned long long majorFaults, startTicks;
+    if (fields &&
+        sscanf(fields + 1,
+               " %*c %*d %*d %*d %*d %*d %*u %*u %*u %llu %*u %*u %*u %*d %*d"
+               " %*d %*d %*d %*d %llu",
+               &majorFaults, &startTicks) == 2) {
+      aInfo.majorPageFaults = Some(uint64_t(majorFaults));
+
+      long ticksPerSec = sysconf(_SC_CLK_TCK);
+      timespec now;
+      // starttime is measured on the CLOCK_BOOTTIME timeline.
+      if (ticksPerSec > 0 && clock_gettime(CLOCK_BOOTTIME, &now) == 0) {
+        uint64_t nowNs =
+            uint64_t(now.tv_sec) * 1'000'000'000u + uint64_t(now.tv_nsec);
+        uint64_t startNs =
+            startTicks / ticksPerSec * 1'000'000'000u +
+            startTicks % ticksPerSec * 1'000'000'000u / ticksPerSec;
+        if (nowNs >= startNs) {
+          aInfo.uptime = Some(nowNs - startNs);
+        }
+      }
+    }
+  }
+}
+
+static void ReadExtendedThreadInfo(base::ProcessId aPid, base::ProcessId aTid,
+                                   ThreadInfo& aInfo) {
+  char path[64];
+  SprintfLiteral(path, "/proc/%u/task/%u/schedstat", unsigned(aPid),
+                 unsigned(aTid));
+  // Contains the time spent on the CPU, the time spent waiting for a CPU,
+  // and the number of times the thread was switched onto a CPU.
+  char buffer[128];
+  unsigned long long cpuWaitTime, contextSwitches;
+  if (ReadProcFile(path, buffer, sizeof(buffer)) &&
+      sscanf(buffer, "%*u %llu %llu", &cpuWaitTime, &contextSwitches) == 2) {
+    aInfo.cpuWaitTime = Some(uint64_t(cpuWaitTime));
+    aInfo.contextSwitches = Some(uint64_t(contextSwitches));
+  }
+}
+
 nsresult GetCpuTimeSinceProcessStartInMs(uint64_t* aResult) {
   timespec t;
   if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t) == 0) {
@@ -268,6 +367,10 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
       }
     }
 
+    if (request.extendedProcessInfo) {
+      ReadExtendedProcessInfo(request.pid, info);
+    }
+
     // Extra info
     info.pid = request.pid;
     info.childId = request.childId;
@@ -304,6 +407,9 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
 
       ThreadInfo threadInfo;
       threadInfo.tid = tid;
+      if (request.extendedThreadInfo) {
+        ReadExtendedThreadInfo(request.pid, tid, threadInfo);
+      }
 
       timespec ts;
       if (clock_gettime(MAKE_THREAD_CPUCLOCK(tid, CPUCLOCK_SCHED), &ts) == 0) {

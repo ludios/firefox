@@ -795,7 +795,7 @@ partial namespace ChromeUtils {
   * Returns a Promise containing all processes info
   */
   [NewObject]
-  Promise<ParentProcInfoDictionary> requestProcInfo();
+  Promise<ParentProcInfoDictionary> requestProcInfo(optional ProcInfoOptions options = {});
 
   /**
    * Requests an XDG activation token from the Wayland compositor.
@@ -1062,11 +1062,30 @@ enum WebIDLProcType {
  *
  * See widget/ProcInfo.h for fields documentation.
  */
+dictionary ProcInfoOptions {
+  // Whether to fill in the optional fields of the process dictionaries.
+  boolean extendedProcessInfo = false;
+
+  // Whether to fill in the optional fields of ThreadInfoDictionary. This reads
+  // one more file per thread on Linux, so it is noticeably more expensive.
+  boolean extendedThreadInfo = false;
+};
+
 dictionary ThreadInfoDictionary {
   long long tid = 0;
   DOMString name = "";
   unsigned long long cpuCycleCount = 0;
   unsigned long long cpuTime = 0;
+
+  // --- Optional info, see ProcInfoOptions. `null` if unavailable, which
+  // is currently always the case outside of Linux.
+
+  // Number of times the thread was switched onto a CPU, i.e. how often it
+  // woke up or resumed after being preempted.
+  unsigned long long? contextSwitches = null;
+
+  // Time spent ready to run but waiting for a CPU, in ns.
+  unsigned long long? cpuWaitTime = null;
 };
 
 dictionary WindowInfoDictionary {
@@ -1142,6 +1161,24 @@ dictionary ChildProcInfoDictionary {
   // Thread information for this process.
   sequence<ThreadInfoDictionary> threads = [];
 
+  // --- Optional system info, see ProcInfoOptions. `null` if unavailable,
+  // which is currently always the case outside of Linux.
+
+  // Amount of memory swapped out, in bytes.
+  unsigned long long? swap = null;
+
+  // Number of bytes read from and written to storage since the process
+  // started.
+  unsigned long long? diskReadBytes = null;
+  unsigned long long? diskWriteBytes = null;
+
+  // Number of page faults that required reading from storage since the
+  // process started.
+  unsigned long long? majorPageFaults = null;
+
+  // Time elapsed since the process started, in ns.
+  unsigned long long? uptime = null;
+
   // --- Firefox info
 
   // Internal-to-Firefox process identifier.
@@ -1186,6 +1223,24 @@ dictionary ParentProcInfoDictionary {
 
   // Thread information for this process.
   sequence<ThreadInfoDictionary> threads = [];
+
+  // --- Optional system info, see ProcInfoOptions. `null` if unavailable,
+  // which is currently always the case outside of Linux.
+
+  // Amount of memory swapped out, in bytes.
+  unsigned long long? swap = null;
+
+  // Number of bytes read from and written to storage since the process
+  // started.
+  unsigned long long? diskReadBytes = null;
+  unsigned long long? diskWriteBytes = null;
+
+  // Number of page faults that required reading from storage since the
+  // process started.
+  unsigned long long? majorPageFaults = null;
+
+  // Time elapsed since the process started, in ns.
+  unsigned long long? uptime = null;
 
   // Information on children processes.
   sequence<ChildProcInfoDictionary> children = [];

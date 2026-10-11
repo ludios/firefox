@@ -11,6 +11,7 @@
 #include "mozilla/dom/ChromeUtilsBinding.h"
 #include "mozilla/dom/ipc/IdType.h"
 #include "mozilla/HashTable.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/MozPromise.h"
 
 namespace mozilla {
@@ -96,6 +97,12 @@ struct ThreadInfo {
   uint64_t cpuTime = 0;
   // CPU time in cycles if available.
   uint64_t cpuCycleCount = 0;
+  // Number of times the thread was switched onto a CPU, if requested and
+  // available.
+  Maybe<uint64_t> contextSwitches;
+  // Time spent ready to run but waiting for a CPU in ns, if requested and
+  // available.
+  Maybe<uint64_t> cpuWaitTime;
 };
 
 // Info on a DOM window.
@@ -151,6 +158,16 @@ struct ProcInfo {
   // CPU time in ns.
   uint64_t cpuTime = 0;
   uint64_t cpuCycleCount = 0;
+  // The following are only filled in if requested and available.
+  // Swapped out memory in bytes.
+  Maybe<uint64_t> swap;
+  // Bytes read from and written to storage since the process started.
+  Maybe<uint64_t> diskReadBytes;
+  Maybe<uint64_t> diskWriteBytes;
+  // Page faults that required reading from storage.
+  Maybe<uint64_t> majorPageFaults;
+  // Time since the process started in ns.
+  Maybe<uint64_t> uptime;
   // Threads owned by this process.
   CopyableTArray<ThreadInfo> threads;
   // DOM windows represented by this process.
@@ -203,6 +220,10 @@ struct ProcInfoRequest {
 #ifdef XP_MACOSX
   const mach_port_t childTask;
 #endif  // XP_DARWIN
+  // Whether to fill in the optional fields of `ProcInfo`.
+  bool extendedProcessInfo = false;
+  // Whether to fill in the optional fields of `ThreadInfo`.
+  bool extendedThreadInfo = false;
 };
 
 /**
@@ -268,6 +289,17 @@ nsresult CopySysProcInfoToDOM(const ProcInfo& source, T* dest) {
   dest->mMemory = source.memory;
   dest->mCpuTime = source.cpuTime;
   dest->mCpuCycleCount = source.cpuCycleCount;
+  auto copyOptional = [](const Maybe<uint64_t>& aSource,
+                         dom::Nullable<uint64_t>& aDest) {
+    if (aSource) {
+      aDest.SetValue(*aSource);
+    }
+  };
+  copyOptional(source.swap, dest->mSwap);
+  copyOptional(source.diskReadBytes, dest->mDiskReadBytes);
+  copyOptional(source.diskWriteBytes, dest->mDiskWriteBytes);
+  copyOptional(source.majorPageFaults, dest->mMajorPageFaults);
+  copyOptional(source.uptime, dest->mUptime);
 
   // Copy thread info.
   mozilla::dom::Sequence<mozilla::dom::ThreadInfoDictionary> threads;
@@ -279,6 +311,8 @@ nsresult CopySysProcInfoToDOM(const ProcInfo& source, T* dest) {
     }
     thread->mCpuTime = entry.cpuTime;
     thread->mCpuCycleCount = entry.cpuCycleCount;
+    copyOptional(entry.contextSwitches, thread->mContextSwitches);
+    copyOptional(entry.cpuWaitTime, thread->mCpuWaitTime);
     thread->mTid = entry.tid;
     thread->mName.Assign(entry.name);
   }

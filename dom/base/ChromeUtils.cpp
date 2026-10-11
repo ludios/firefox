@@ -1925,8 +1925,8 @@ static WebIDLProcType ProcTypeToWebIDL(mozilla::ProcType aType) {
 #undef PROCTYPE_TO_WEBIDL_CASE
 
 /* static */
-already_AddRefed<Promise> ChromeUtils::RequestProcInfo(GlobalObject& aGlobal,
-                                                       ErrorResult& aRv) {
+already_AddRefed<Promise> ChromeUtils::RequestProcInfo(
+    GlobalObject& aGlobal, const ProcInfoOptions& aOptions, ErrorResult& aRv) {
   // This function will use IPDL to enable threads info on macOS
   // see https://bugzilla.mozilla.org/show_bug.cgi?id=1529023
   if (!XRE_IsParentProcess()) {
@@ -2137,6 +2137,11 @@ already_AddRefed<Promise> ChromeUtils::RequestProcInfo(GlobalObject& aGlobal,
         /* aChildTask = */ contentParent->Process()->GetChildTask()
 #endif  // XP_MACOSX
     );
+  }
+
+  for (auto& request : requests) {
+    request.extendedProcessInfo = aOptions.mExtendedProcessInfo;
+    request.extendedThreadInfo = aOptions.mExtendedThreadInfo;
   }
 
   // Now place background request.

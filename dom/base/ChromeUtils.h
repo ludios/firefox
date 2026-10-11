@@ -228,8 +228,8 @@ class ChromeUtils {
   static already_AddRefed<Promise> CollectPerfStats(GlobalObject& aGlobal,
                                                     ErrorResult& aRv);
 
-  static already_AddRefed<Promise> RequestProcInfo(GlobalObject& aGlobal,
-                                                   ErrorResult& aRv);
+  static already_AddRefed<Promise> RequestProcInfo(
+      GlobalObject& aGlobal, const ProcInfoOptions& aOptions, ErrorResult& aRv);
 
   static already_AddRefed<Promise> RequestXDGActivationToken(
       GlobalObject& aGlobal, ErrorResult& aRv);
