@@ -252,7 +252,7 @@ async function testMemory(element, total, delta, assumptions) {
     0,
     `Unitless total memory use is greater than 0: ${extractedTotal}`
   );
-  if (extractedUnit != "GB") {
+  if (extractedUnit != "MB") {
     Assert.lessOrEqual(
       extractedTotalNumber,
       1024,

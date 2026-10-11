@@ -25,7 +25,6 @@ const NS_PER_MIN = NS_PER_S * 60;
 const NS_PER_HOUR = NS_PER_MIN * 60;
 const NS_PER_DAY = NS_PER_HOUR * 24;
 
-const ONE_GIGA = 1024 * 1024 * 1024;
 const ONE_MEGA = 1024 * 1024;
 const ONE_KILO = 1024;
 
@@ -1304,7 +1303,7 @@ function fillCell(elt, { classes, fluentName, fluentArgs }) {
  * not have sufficient information to compute an amount of memory.
  *
  * @param {number?} value The value to format. Must be either `null` or a non-negative number.
- * @return { {unit: "GB" | "MB" | "KB" | B" | "?"}, amount: Number } The formated amount and its
+ * @return { {unit: "MB" | "KB" | B" | "?"}, amount: Number } The formated amount and its
  *  unit, which may be used for e.g. additional CSS formating.
  */
 function formatMemory(value) {
@@ -1315,12 +1314,6 @@ function formatMemory(value) {
     throw new Error(`Invalid memory value ${value}`);
   }
   let abs = Math.abs(value);
-  if (abs >= ONE_GIGA) {
-    return {
-      unit: "GB",
-      amount: value / ONE_GIGA,
-    };
-  }
   if (abs >= ONE_MEGA) {
     return {
       unit: "MB",
