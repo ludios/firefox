@@ -14,6 +14,8 @@ body {
 #process-table {
   --wakeups-column-width: 0;
   --cpu-wait-column-width: 0;
+  --shared-memory-column-width: 0;
+  --peak-memory-column-width: 0;
   --swap-column-width: 0;
   --disk-read-column-width: 0;
   --disk-write-column-width: 0;
@@ -105,6 +107,7 @@ tr {
   grid-template-columns:
     1fr 15% 15%
     var(--wakeups-column-width) var(--cpu-wait-column-width)
+    var(--shared-memory-column-width) var(--peak-memory-column-width)
     var(--swap-column-width) var(--disk-read-column-width)
     var(--disk-write-column-width) var(--major-faults-column-width)
     var(--uptime-column-width)
@@ -203,6 +206,12 @@ td.optional-column {
 #process-table.show-cpu-wait {
   --cpu-wait-column-width: 7em;
 }
+#process-table.show-shared-memory {
+  --shared-memory-column-width: 7em;
+}
+#process-table.show-peak-memory {
+  --peak-memory-column-width: 7em;
+}
 #process-table.show-swap {
   --swap-column-width: 7em;
 }
@@ -220,6 +229,8 @@ td.optional-column {
 }
 #process-table:not(.show-wakeups) .wakeups,
 #process-table:not(.show-cpu-wait) .cpu-wait,
+#process-table:not(.show-shared-memory) .shared-memory,
+#process-table:not(.show-peak-memory) .peak-memory,
 #process-table:not(.show-swap) .swap,
 #process-table:not(.show-disk-read) .disk-read,
 #process-table:not(.show-disk-write) .disk-write,

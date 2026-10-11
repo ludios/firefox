@@ -14,6 +14,8 @@
 #include <psapi.h>
 #include <winternl.h>
 #include <xpcpublic.h>
+#include <cstddef>
+#include <cstring>
 
 #ifndef STATUS_INFO_LENGTH_MISMATCH
 #  define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004L)
@@ -101,6 +103,9 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
 
   int frequencyInMHz = GetCycleTimeFrequencyMHz();
 
+  // Processes for which to fill in the optional fields of ProcInfo.
+  nsTArray<base::ProcessId> extendedPids;
+
   // ---- Copying data on processes (minus threads).
 
   for (const auto& request : aRequests) {
@@ -155,6 +160,10 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
     info.cpuTime = cpuTime;
     info.cpuCycleCount = cpuCycleTime;
     info.memory = memoryCounters.PrivateUsage;
+    if (request.extendedProcessInfo) {
+      info.peakMemory = Some(uint64_t(memoryCounters.PeakPagefileUsage));
+      extendedPids.AppendElement(request.pid);
+    }
 
     if (!gathered.put(request.pid, std::move(info))) {
       result.SetReject(NS_ERROR_OUT_OF_MEMORY);
@@ -214,6 +223,20 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
     // Check if we are interested in this process.
     auto processLookup = gathered.lookup(pid);
     if (processLookup) {
+      if (extendedPids.Contains(pid)) {
+        // The private working set size is missing from the public definition
+        // of SYSTEM_PROCESS_INFORMATION, it directly follows NumberOfThreads.
+        LARGE_INTEGER privateWorkingSet;
+        memcpy(&privateWorkingSet,
+               reinterpret_cast<const char*>(processInfo) +
+                   offsetof(SYSTEM_PROCESS_INFORMATION, NumberOfThreads) +
+                   sizeof(processInfo->NumberOfThreads),
+               sizeof(privateWorkingSet));
+        uint64_t workingSet = processInfo->WorkingSetSize;
+        uint64_t privateBytes = uint64_t(privateWorkingSet.QuadPart);
+        processLookup->value().sharedMemory =
+            Some(workingSet > privateBytes ? workingSet - privateBytes : 0);
+      }
       for (ULONG i = 0; i < processInfo->NumberOfThreads; ++i) {
         // The thread information structs are stored in the buffer right
         // after the SYSTEM_PROCESS_INFORMATION struct.

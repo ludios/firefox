@@ -241,6 +241,9 @@ static void ReadExtendedProcessInfo(base::ProcessId aPid, ProcInfo& aInfo) {
 
   SprintfLiteral(path, "/proc/%u/status", unsigned(aPid));
   if (ReadProcFile(path, buffer, sizeof(buffer))) {
+    if (Maybe<uint64_t> peakKB = FindProcFileValue(buffer, "VmHWM:")) {
+      aInfo.peakMemory = Some(*peakKB * 1024);
+    }
     if (Maybe<uint64_t> swapKB = FindProcFileValue(buffer, "VmSwap:")) {
       aInfo.swap = Some(*swapKB * 1024);
     }
@@ -364,6 +367,9 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
       fclose(f);
       if (nread == MAX_FIELD) {
         info.memory = (resident - shared) * getpagesize();
+        if (request.extendedProcessInfo) {
+          info.sharedMemory = Some(uint64_t(shared) * getpagesize());
+        }
       }
     }
 

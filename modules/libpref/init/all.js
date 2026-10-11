@@ -3705,7 +3705,8 @@ pref("toolkit.aboutProcesses.showProfilerIcons", true);
 // profile is captured.
 pref("toolkit.aboutProcesses.profileDuration", 5);
 // Comma-separated list of the optional about:processes columns to show, e.g.
-// "wakeups,cpu-wait,swap,disk-read,disk-write,major-faults,uptime".
+// "wakeups,cpu-wait,shared-memory,peak-memory,swap,disk-read,disk-write,
+// major-faults,uptime".
 pref("toolkit.aboutProcesses.optionalColumns", "");
 
 // This preference controls how about:logging handles profiles when stopping:

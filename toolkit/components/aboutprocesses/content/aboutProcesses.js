@@ -79,6 +79,8 @@ const OPTIONAL_COLUMNS_PREF = "toolkit.aboutProcesses.optionalColumns";
 const OPTIONAL_COLUMNS = [
   "wakeups",
   "cpu-wait",
+  "shared-memory",
+  "peak-memory",
   "swap",
   "disk-read",
   "disk-write",
@@ -120,6 +122,10 @@ function getOptionalColumnValue(column, data) {
       return perSecond(data.slopeContextSwitches);
     case "cpu-wait":
       return data.slopeCpuWait;
+    case "shared-memory":
+      return data.sharedMemory;
+    case "peak-memory":
+      return data.peakMemory;
     case "swap":
       return data.swap;
     case "disk-read":
@@ -584,6 +590,8 @@ var State = {
       totalCpu: cur.cpuTime,
       slopeCpu: null,
       active: null,
+      sharedMemory: cur.sharedMemory,
+      peakMemory: cur.peakMemory,
       swap: cur.swap,
       uptime: cur.uptime,
       slopeContextSwitches: null,
@@ -857,6 +865,8 @@ class ProcessesView extends RowSet {
           classes,
         });
         break;
+      case "shared-memory":
+      case "peak-memory":
       case "swap": {
         let { amount, unit } = formatMemory(value);
         fillCell(cell, {

@@ -92,6 +92,22 @@
               aria-sort="none"
             ></button>
           </th>
+          <th class="clickable-header optional-column shared-memory">
+            <button
+              class="clickable"
+              id="column-shared-memory"
+              data-l10n-id="about-processes-column-shared-memory"
+              aria-sort="none"
+            ></button>
+          </th>
+          <th class="clickable-header optional-column peak-memory">
+            <button
+              class="clickable"
+              id="column-peak-memory"
+              data-l10n-id="about-processes-column-peak-memory"
+              aria-sort="none"
+            ></button>
+          </th>
           <th class="clickable-header optional-column swap">
             <button
               class="clickable"
@@ -200,6 +216,16 @@
         type="checkbox"
         data-column="cpu-wait"
         data-l10n-id="about-processes-column-cpu-wait"
+      ></panel-item>
+      <panel-item
+        type="checkbox"
+        data-column="shared-memory"
+        data-l10n-id="about-processes-column-shared-memory"
+      ></panel-item>
+      <panel-item
+        type="checkbox"
+        data-column="peak-memory"
+        data-l10n-id="about-processes-column-peak-memory"
       ></panel-item>
       <panel-item
         type="checkbox"

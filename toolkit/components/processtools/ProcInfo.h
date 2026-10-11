@@ -159,6 +159,10 @@ struct ProcInfo {
   uint64_t cpuTime = 0;
   uint64_t cpuCycleCount = 0;
   // The following are only filled in if requested and available.
+  // Resident memory in bytes that isn't private to the process.
+  Maybe<uint64_t> sharedMemory;
+  // Peak memory use in bytes, see ChromeUtils.webidl.
+  Maybe<uint64_t> peakMemory;
   // Swapped out memory in bytes.
   Maybe<uint64_t> swap;
   // Bytes read from and written to storage since the process started.
@@ -295,6 +299,8 @@ nsresult CopySysProcInfoToDOM(const ProcInfo& source, T* dest) {
       aDest.SetValue(*aSource);
     }
   };
+  copyOptional(source.sharedMemory, dest->mSharedMemory);
+  copyOptional(source.peakMemory, dest->mPeakMemory);
   copyOptional(source.swap, dest->mSwap);
   copyOptional(source.diskReadBytes, dest->mDiskReadBytes);
   copyOptional(source.diskWriteBytes, dest->mDiskWriteBytes);

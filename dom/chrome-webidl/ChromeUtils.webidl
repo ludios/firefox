@@ -1164,6 +1164,16 @@ dictionary ChildProcInfoDictionary {
   // --- Optional system info, see ProcInfoOptions. `null` if unavailable,
   // which is currently always the case outside of Linux.
 
+  // Resident memory that isn't private to the process, i.e. shared memory and
+  // memory-mapped files such as program code, in bytes. It isn't counted in
+  // `memory`.
+  unsigned long long? sharedMemory = null;
+
+  // Highest memory use since the process started, in bytes. On Windows this
+  // is the peak of `memory`, on Linux the peak resident memory, which also
+  // includes `sharedMemory`.
+  unsigned long long? peakMemory = null;
+
   // Amount of memory swapped out, in bytes.
   unsigned long long? swap = null;
 
@@ -1226,6 +1236,16 @@ dictionary ParentProcInfoDictionary {
 
   // --- Optional system info, see ProcInfoOptions. `null` if unavailable,
   // which is currently always the case outside of Linux.
+
+  // Resident memory that isn't private to the process, i.e. shared memory and
+  // memory-mapped files such as program code, in bytes. It isn't counted in
+  // `memory`.
+  unsigned long long? sharedMemory = null;
+
+  // Highest memory use since the process started, in bytes. On Windows this
+  // is the peak of `memory`, on Linux the peak resident memory, which also
+  // includes `sharedMemory`.
+  unsigned long long? peakMemory = null;
 
   // Amount of memory swapped out, in bytes.
   unsigned long long? swap = null;
