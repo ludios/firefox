@@ -75,12 +75,6 @@ You can find the review identifier by inspecting the commit log with:
 
 # After making changes
 
-At the workspace root:
-
-	pnpm lint  # runs oxlint
-	pnpm check # runs svelte-check
-	pnpm test  # runs vitest
-
 Never `git commit -a` because there may be others working; stage changes manually.
 
 Then automatically commit your changes with this commit template:
