@@ -1077,8 +1077,9 @@ dictionary ThreadInfoDictionary {
   unsigned long long cpuCycleCount = 0;
   unsigned long long cpuTime = 0;
 
-  // --- Optional info, see ProcInfoOptions. `null` if unavailable, which
-  // is currently always the case outside of Linux.
+  // --- Optional info, see ProcInfoOptions. `null` if unavailable:
+  // `contextSwitches` is available on Linux and Windows, `cpuWaitTime` only
+  // on Linux.
 
   // Number of times the thread was switched onto a CPU, i.e. how often it
   // woke up or resumed after being preempted.
@@ -1161,8 +1162,9 @@ dictionary ChildProcInfoDictionary {
   // Thread information for this process.
   sequence<ThreadInfoDictionary> threads = [];
 
-  // --- Optional system info, see ProcInfoOptions. `null` if unavailable,
-  // which is currently always the case outside of Linux.
+  // --- Optional system info, see ProcInfoOptions. `null` if unavailable:
+  // all of these are available on Linux, and all but `swap`, `diskReadBytes`
+  // and `diskWriteBytes` on Windows.
 
   // Resident memory that isn't private to the process, i.e. shared memory and
   // memory-mapped files such as program code, in bytes. It isn't counted in
@@ -1234,8 +1236,9 @@ dictionary ParentProcInfoDictionary {
   // Thread information for this process.
   sequence<ThreadInfoDictionary> threads = [];
 
-  // --- Optional system info, see ProcInfoOptions. `null` if unavailable,
-  // which is currently always the case outside of Linux.
+  // --- Optional system info, see ProcInfoOptions. `null` if unavailable:
+  // all of these are available on Linux, and all but `swap`, `diskReadBytes`
+  // and `diskWriteBytes` on Windows.
 
   // Resident memory that isn't private to the process, i.e. shared memory and
   // memory-mapped files such as program code, in bytes. It isn't counted in

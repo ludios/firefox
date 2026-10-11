@@ -28,6 +28,26 @@ typedef HRESULT(WINAPI* GETTHREADDESCRIPTION)(HANDLE hThread,
 
 namespace mozilla {
 
+// Offsets of fields that the public definitions of the NtQuerySystemInformation
+// structs leave out. SYSTEM_PROCESS_INFORMATION continues after NumberOfThreads
+// with LARGE_INTEGER WorkingSetPrivateSize and ULONG HardFaultCount, and
+// SYSTEM_THREAD_INFORMATION continues after ClientId with KPRIORITY Priority,
+// LONG BasePriority and ULONG ContextSwitches.
+static constexpr size_t kWorkingSetPrivateSizeOffset =
+    offsetof(SYSTEM_PROCESS_INFORMATION, NumberOfThreads) + sizeof(ULONG);
+static constexpr size_t kHardFaultCountOffset =
+    kWorkingSetPrivateSizeOffset + sizeof(LARGE_INTEGER);
+static constexpr size_t kContextSwitchesOffset =
+    offsetof(SYSTEM_THREAD_INFORMATION, ClientId) + sizeof(CLIENT_ID) +
+    2 * sizeof(LONG);
+
+template <typename T>
+static T ReadField(const void* aStruct, size_t aOffset) {
+  T value;
+  memcpy(&value, static_cast<const char*>(aStruct) + aOffset, sizeof(value));
+  return value;
+}
+
 static uint64_t ToNanoSeconds(const FILETIME& aFileTime) {
   // FILETIME values are 100-nanoseconds units, converting
   ULARGE_INTEGER usec = {{aFileTime.dwLowDateTime, aFileTime.dwHighDateTime}};
@@ -103,8 +123,10 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
 
   int frequencyInMHz = GetCycleTimeFrequencyMHz();
 
-  // Processes for which to fill in the optional fields of ProcInfo.
-  nsTArray<base::ProcessId> extendedPids;
+  // Processes for which to fill in the optional fields of ProcInfo and of
+  // ThreadInfo.
+  nsTArray<base::ProcessId> extendedProcessPids;
+  nsTArray<base::ProcessId> extendedThreadPids;
 
   // ---- Copying data on processes (minus threads).
 
@@ -162,7 +184,20 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
     info.memory = memoryCounters.PrivateUsage;
     if (request.extendedProcessInfo) {
       info.peakMemory = Some(uint64_t(memoryCounters.PeakPagefileUsage));
-      extendedPids.AppendElement(request.pid);
+      FILETIME createTime, exitTime, kernelTime, userTime, now;
+      if (GetProcessTimes(handle.get(), &createTime, &exitTime, &kernelTime,
+                          &userTime)) {
+        GetSystemTimeAsFileTime(&now);
+        uint64_t nowNs = ToNanoSeconds(now);
+        uint64_t startNs = ToNanoSeconds(createTime);
+        if (nowNs >= startNs) {
+          info.uptime = Some(nowNs - startNs);
+        }
+      }
+      extendedProcessPids.AppendElement(request.pid);
+    }
+    if (request.extendedThreadInfo) {
+      extendedThreadPids.AppendElement(request.pid);
     }
 
     if (!gathered.put(request.pid, std::move(info))) {
@@ -223,20 +258,17 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
     // Check if we are interested in this process.
     auto processLookup = gathered.lookup(pid);
     if (processLookup) {
-      if (extendedPids.Contains(pid)) {
-        // The private working set size is missing from the public definition
-        // of SYSTEM_PROCESS_INFORMATION, it directly follows NumberOfThreads.
-        LARGE_INTEGER privateWorkingSet;
-        memcpy(&privateWorkingSet,
-               reinterpret_cast<const char*>(processInfo) +
-                   offsetof(SYSTEM_PROCESS_INFORMATION, NumberOfThreads) +
-                   sizeof(processInfo->NumberOfThreads),
-               sizeof(privateWorkingSet));
+      if (extendedProcessPids.Contains(pid)) {
         uint64_t workingSet = processInfo->WorkingSetSize;
-        uint64_t privateBytes = uint64_t(privateWorkingSet.QuadPart);
+        uint64_t privateBytes = uint64_t(
+            ReadField<LARGE_INTEGER>(processInfo, kWorkingSetPrivateSizeOffset)
+                .QuadPart);
         processLookup->value().sharedMemory =
             Some(workingSet > privateBytes ? workingSet - privateBytes : 0);
+        processLookup->value().majorPageFaults = Some(
+            uint64_t(ReadField<ULONG>(processInfo, kHardFaultCountOffset)));
       }
+      bool extendedThreadInfo = extendedThreadPids.Contains(pid);
       for (ULONG i = 0; i < processInfo->NumberOfThreads; ++i) {
         // The thread information structs are stored in the buffer right
         // after the SYSTEM_PROCESS_INFORMATION struct.
@@ -265,6 +297,10 @@ ProcInfoPromise::ResolveOrRejectValue GetProcInfoSync(
         }
 
         threadInfo->tid = tid;
+        if (extendedThreadInfo) {
+          threadInfo->contextSwitches =
+              Some(uint64_t(ReadField<ULONG>(thread, kContextSwitchesOffset)));
+        }
 
         // Attempt to get thread times.
         // If we fail, continue without this piece of information.
