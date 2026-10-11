@@ -3704,6 +3704,9 @@ pref("toolkit.aboutProcesses.showProfilerIcons", true);
 // Time in seconds between when the profiler is started and when the
 // profile is captured.
 pref("toolkit.aboutProcesses.profileDuration", 5);
+// Comma-separated list of the optional about:processes columns to show, e.g.
+// "wakeups,cpu-wait,swap,disk-read,disk-write,major-faults,uptime".
+pref("toolkit.aboutProcesses.optionalColumns", "");
 
 // This preference controls how about:logging handles profiles when stopping:
 // either it opens the profile in a new tab on profiler.firefox.com, or it

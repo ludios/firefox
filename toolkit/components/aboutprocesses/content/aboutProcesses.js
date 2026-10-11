@@ -72,6 +72,82 @@ const PROFILE_DURATION = Math.max(
   Services.prefs.getIntPref("toolkit.aboutProcesses.profileDuration")
 );
 
+const OPTIONAL_COLUMNS_PREF = "toolkit.aboutProcesses.optionalColumns";
+
+// Columns hidden by default, in display order. Thread rows only have cells for
+// THREAD_COLUMNS, so these must come first.
+const OPTIONAL_COLUMNS = [
+  "wakeups",
+  "cpu-wait",
+  "swap",
+  "disk-read",
+  "disk-write",
+  "major-faults",
+  "uptime",
+];
+const THREAD_COLUMNS = ["wakeups", "cpu-wait"];
+
+/**
+ * The increase of a counter between two samples, per ns.
+ *
+ * @param {number?} cur The latest value of the counter, if available.
+ * @param {number?} prev The previous value of the counter, if available.
+ * @param {number} deltaT The time between the two samples, in ns.
+ * @return {number?} `null` if the counter is unavailable in either sample.
+ */
+function getSlope(cur, prev, deltaT) {
+  if (cur == null || prev == null || !deltaT) {
+    return null;
+  }
+  return Math.max(0, cur - prev) / deltaT;
+}
+
+function sumKnownValues(values) {
+  let known = values.filter(value => value != null);
+  return known.length ? known.reduce((sum, value) => sum + value) : null;
+}
+
+/**
+ * The value shown in an optional column for a process or thread, per second
+ * for rates.
+ *
+ * @return {number?} `null` if the value is unavailable.
+ */
+function getOptionalColumnValue(column, data) {
+  let perSecond = slope => (slope == null ? null : slope * NS_PER_S);
+  switch (column) {
+    case "wakeups":
+      return perSecond(data.slopeContextSwitches);
+    case "cpu-wait":
+      return data.slopeCpuWait;
+    case "swap":
+      return data.swap;
+    case "disk-read":
+      return perSecond(data.slopeDiskRead);
+    case "disk-write":
+      return perSecond(data.slopeDiskWrite);
+    case "major-faults":
+      return perSecond(data.slopeMajorPageFaults);
+    case "uptime":
+      return data.uptime;
+    default:
+      throw new Error("Unsupported column: " + column);
+  }
+}
+
+// Returns the optional column of a column header id, if any.
+function getOptionalColumnFromId(columnId) {
+  let column = columnId?.replace(/^column-/, "");
+  return OPTIONAL_COLUMNS.includes(column) ? column : null;
+}
+
+function compareOptionalColumn(column, a, b) {
+  return (
+    (getOptionalColumnValue(column, b) ?? -1) -
+    (getOptionalColumnValue(column, a) ?? -1)
+  );
+}
+
 /**
  * For the time being, Fluent doesn't support duration or memory formats, so we need
  * to fetch units from Fluent. To avoid re-fetching at each update, we prefetch these
@@ -362,10 +438,13 @@ var State = {
   // Store the previous and current samples so they can be compared.
   _previous: null,
   _latest: null,
+  // Options for ChromeUtils.requestProcInfo(), to only gather the optional
+  // statistics of the columns being shown.
+  procInfoOptions: {},
 
   async _promiseSnapshot() {
     let date = ChromeUtils.now();
-    let main = await ChromeUtils.requestProcInfo();
+    let main = await ChromeUtils.requestProcInfo(this.procInfoOptions);
     main.date = date;
 
     let processes = new Map();
@@ -408,6 +487,8 @@ var State = {
       totalCpu: cur.cpuTime,
       slopeCpu: null,
       active: null,
+      slopeContextSwitches: null,
+      slopeCpuWait: null,
     };
     if (!deltaT) {
       return result;
@@ -415,6 +496,16 @@ var State = {
     result.slopeCpu = (result.totalCpu - (prev ? prev.cpuTime : 0)) / deltaT;
     result.active =
       !!result.slopeCpu || cur.cpuCycleCount > (prev ? prev.cpuCycleCount : 0);
+    result.slopeContextSwitches = getSlope(
+      cur.contextSwitches,
+      prev ? prev.contextSwitches : 0,
+      deltaT
+    );
+    result.slopeCpuWait = getSlope(
+      cur.cpuWaitTime,
+      prev ? prev.cpuWaitTime : 0,
+      deltaT
+    );
     return result;
   },
 
@@ -493,6 +584,13 @@ var State = {
       totalCpu: cur.cpuTime,
       slopeCpu: null,
       active: null,
+      swap: cur.swap,
+      uptime: cur.uptime,
+      slopeContextSwitches: null,
+      slopeCpuWait: null,
+      slopeDiskRead: null,
+      slopeDiskWrite: null,
+      slopeMajorPageFaults: null,
       type: cur.type,
       origin: cur.origin || "",
       threads: null,
@@ -524,7 +622,12 @@ var State = {
     }
     let deltaT = (cur.date - prev.date) * NS_PER_MS;
     let threads = null;
-    if (SHOW_THREADS) {
+    // Per-thread counters are only summed if both samples have them, as
+    // otherwise only the threads started in between would count.
+    let hasThreadStats = [cur, prev].every(snapshot =>
+      snapshot.threads.some(thread => thread.contextSwitches != null)
+    );
+    if (SHOW_THREADS || hasThreadStats) {
       let prevThreads = new Map();
       for (let thread of prev.threads) {
         prevThreads.set(thread.tid, thread);
@@ -536,7 +639,30 @@ var State = {
     result.deltaRamSize = cur.memory - prev.memory;
     result.slopeCpu = (cur.cpuTime - prev.cpuTime) / deltaT;
     result.active = !!result.slopeCpu || cur.cpuCycleCount > prev.cpuCycleCount;
-    result.threads = threads;
+    if (hasThreadStats) {
+      result.slopeContextSwitches = sumKnownValues(
+        threads.map(thread => thread.slopeContextSwitches)
+      );
+      result.slopeCpuWait = sumKnownValues(
+        threads.map(thread => thread.slopeCpuWait)
+      );
+    }
+    result.slopeDiskRead = getSlope(
+      cur.diskReadBytes,
+      prev.diskReadBytes,
+      deltaT
+    );
+    result.slopeDiskWrite = getSlope(
+      cur.diskWriteBytes,
+      prev.diskWriteBytes,
+      deltaT
+    );
+    result.slopeMajorPageFaults = getSlope(
+      cur.majorPageFaults,
+      prev.majorPageFaults,
+      deltaT
+    );
+    result.threads = SHOW_THREADS ? threads : null;
     return result;
   },
 
@@ -608,6 +734,9 @@ class ProcessesView extends RowSet {
   // Processes, tabs and subframes that we killed during the previous iteration.
   // Array<{pid:Number} | {windowId:Number}>
   _killedRecently = [];
+  // The optional columns being shown, others aren't kept up to date.
+  // Set<String>
+  optionalColumns = new Set();
 
   commit() {
     this._killedRecently.length = 0;
@@ -695,6 +824,68 @@ class ProcessesView extends RowSet {
       }
     }
     cpuCell.style.setProperty("--bar-width", barWidth);
+  }
+
+  displayOptionalColumn(column, data, cell) {
+    let classes = ["optional-column", column];
+    if (!this.optionalColumns.has(column)) {
+      // Still needed to hide the cell.
+      cell.className = classes.join(" ");
+      return;
+    }
+    let value = getOptionalColumnValue(column, data);
+    if (value == null) {
+      cell.removeAttribute("data-l10n-id");
+      cell.removeAttribute("data-l10n-args");
+      cell.textContent = "—";
+      cell.className = classes.join(" ");
+      return;
+    }
+    switch (column) {
+      case "wakeups":
+      case "major-faults":
+        fillCell(cell, {
+          fluentName: "about-processes-rate-per-second",
+          fluentArgs: { rate: value },
+          classes,
+        });
+        break;
+      case "cpu-wait":
+        fillCell(cell, {
+          fluentName: "about-processes-cpu-wait",
+          fluentArgs: { percent: value },
+          classes,
+        });
+        break;
+      case "swap": {
+        let { amount, unit } = formatMemory(value);
+        fillCell(cell, {
+          fluentName: "about-processes-total-memory-size-no-change",
+          fluentArgs: { total: amount, totalUnit: gLocalizedUnits.memory[unit] },
+          classes,
+        });
+        break;
+      }
+      case "disk-read":
+      case "disk-write": {
+        let { amount, unit } = formatMemory(value);
+        fillCell(cell, {
+          fluentName: "about-processes-data-rate",
+          fluentArgs: { amount, unit: gLocalizedUnits.memory[unit] },
+          classes,
+        });
+        break;
+      }
+      case "uptime": {
+        let { duration, unit } = this._getDuration(value);
+        fillCell(cell, {
+          fluentName: "about-processes-uptime",
+          fluentArgs: { duration, unit: gLocalizedUnits.duration[unit] },
+          classes,
+        });
+        break;
+      }
+    }
   }
 
   /**
@@ -893,7 +1084,7 @@ class ProcessesView extends RowSet {
    * @return {DOMElement} The row displaying the process.
    */
   displayProcessRow(data, maxSlopeCpu) {
-    const cellCount = 4;
+    const cellCount = 4 + OPTIONAL_COLUMNS.length;
     let rowId = "p:" + data.pid;
     let row = this._getOrCreateRow(rowId, cellCount);
     row.process = data;
@@ -942,8 +1133,15 @@ class ProcessesView extends RowSet {
     let cpuCell = memoryCell.nextSibling;
     this.displayCpu(data, cpuCell, maxSlopeCpu);
 
+    // Optional columns
+    let cell = cpuCell;
+    for (let column of OPTIONAL_COLUMNS) {
+      cell = cell.nextSibling;
+      this.displayOptionalColumn(column, data, cell);
+    }
+
     // Column: Actions with Kill button – but not for all processes.
-    let actionCell = cpuCell.nextSibling;
+    let actionCell = cell.nextSibling;
 
     if (!actionCell.firstChild) {
       let span = document.createElement("span");
@@ -1238,7 +1436,7 @@ class ProcessesView extends RowSet {
    * @param {number} maxSlopeCpu The largest slopeCpu value.
    */
   displayThreadRow(data, maxSlopeCpu) {
-    const cellCount = 3;
+    const cellCount = 3 + THREAD_COLUMNS.length;
     let rowId = "t:" + data.tid;
     let row = this._getOrCreateRow(rowId, cellCount);
     row.thread = data;
@@ -1256,9 +1454,16 @@ class ProcessesView extends RowSet {
     });
 
     // Column: CPU
-    this.displayCpu(data, nameCell.nextSibling, maxSlopeCpu);
+    let cell = nameCell.nextSibling;
+    this.displayCpu(data, cell, maxSlopeCpu);
 
-    // Third column (Buttons) is empty, nothing to do.
+    // Optional columns
+    for (let column of THREAD_COLUMNS) {
+      cell = cell.nextSibling;
+      this.displayOptionalColumn(column, data, cell);
+    }
+
+    // Last column (Buttons) is empty, nothing to do.
   }
 
   _getDuration(rawDurationNS) {
@@ -1421,6 +1626,7 @@ class ProcessesController {
   }
   init() {
     this._initHangReports();
+    this._initOptionalColumns();
 
     // Start prefetching localizations.
     this._promiseLocalizations = promiseLocalizations();
@@ -1533,6 +1739,68 @@ class ProcessesController {
   }
   _updateLastMouseEvent() {
     this._lastMouseEvent = Date.now();
+  }
+  _initOptionalColumns() {
+    let shown = Services.prefs
+      .getStringPref(OPTIONAL_COLUMNS_PREF, "")
+      .split(",");
+    this._optionalColumns = new Set(
+      OPTIONAL_COLUMNS.filter(column => shown.includes(column))
+    );
+    this._applyOptionalColumns();
+
+    let button = document.getElementById("column-options-button");
+    let menu = document.getElementById("column-options-menu");
+    button.hidden = false;
+    button.addEventListener("click", event => menu.toggle(event));
+    menu.addEventListener("click", event => {
+      let column = event.target.closest("panel-item")?.dataset.column;
+      if (!column) {
+        return;
+      }
+      if (!this._optionalColumns.delete(column)) {
+        this._optionalColumns.add(column);
+      }
+      Services.prefs.setStringPref(
+        OPTIONAL_COLUMNS_PREF,
+        OPTIONAL_COLUMNS.filter(c => this._optionalColumns.has(c)).join(",")
+      );
+      this._applyOptionalColumns();
+      // Sample right away rather than waiting for the next update to start
+      // gathering the statistics of a newly shown column.
+      this.update(true);
+    });
+  }
+  _applyOptionalColumns() {
+    let table = document.getElementById("process-table");
+    for (let column of OPTIONAL_COLUMNS) {
+      table.classList.toggle(
+        "show-" + column,
+        this._optionalColumns.has(column)
+      );
+    }
+    for (let item of document.querySelectorAll(
+      "#column-options-menu > panel-item"
+    )) {
+      item.checked = this._optionalColumns.has(item.dataset.column);
+    }
+    this._view.optionalColumns = this._optionalColumns;
+    State.procInfoOptions = {
+      extendedProcessInfo: [...this._optionalColumns].some(
+        column => !THREAD_COLUMNS.includes(column)
+      ),
+      extendedThreadInfo: THREAD_COLUMNS.some(column =>
+        this._optionalColumns.has(column)
+      ),
+    };
+
+    let sortedColumn = getOptionalColumnFromId(this._sortColumn);
+    if (sortedColumn && !this._optionalColumns.has(sortedColumn)) {
+      let header = document.getElementById(this._sortColumn);
+      header.setAttribute("aria-sort", "none");
+      header.classList.remove("arrow-up", "arrow-down");
+      this._sortColumn = null;
+    }
   }
   _initHangReports() {
     const PROCESS_HANG_REPORT_NOTIFICATION = "process-hang-report";
@@ -1680,8 +1948,17 @@ class ProcessesController {
         case null:
           order = a.tid - b.tid;
           break;
-        default:
-          throw new Error("Unsupported order: " + this._sortColumn);
+        default: {
+          let column = getOptionalColumnFromId(this._sortColumn);
+          if (!column) {
+            throw new Error("Unsupported order: " + this._sortColumn);
+          }
+          order =
+            (THREAD_COLUMNS.includes(column) &&
+              compareOptionalColumn(column, a, b)) ||
+            a.tid - b.tid;
+          break;
+        }
       }
       if (!this._sortAscendent) {
         order = -order;
@@ -1712,8 +1989,14 @@ class ProcessesController {
             // Other processes are ordered by origin.
             String(a.origin).localeCompare(b.origin);
           break;
-        default:
-          throw new Error("Unsupported order: " + this._sortColumn);
+        default: {
+          let column = getOptionalColumnFromId(this._sortColumn);
+          if (!column) {
+            throw new Error("Unsupported order: " + this._sortColumn);
+          }
+          order = compareOptionalColumn(column, a, b) || a.pid - b.pid;
+          break;
+        }
       }
       if (!this._sortAscendent) {
         order = -order;

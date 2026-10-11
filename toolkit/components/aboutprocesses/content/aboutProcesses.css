@@ -12,6 +12,13 @@ body {
 }
 
 #process-table {
+  --wakeups-column-width: 0;
+  --cpu-wait-column-width: 0;
+  --swap-column-width: 0;
+  --disk-read-column-width: 0;
+  --disk-write-column-width: 0;
+  --major-faults-column-width: 0;
+  --uptime-column-width: 0;
   user-select: none;
   font-size: 1em;
   border-spacing: 0;
@@ -93,8 +100,15 @@ body.tab-view :is(.totals-row, .bulk-summary-row) {
 tr {
   display: grid;
   /* Flexible width for the name column, 15% width for the memory and CPU column,
-   * then fixed width (16px icon + 2*10px margin) for the actions column. */
-  grid-template-columns: 1fr 15% 15% 36px;
+   * then the optional columns, which have no width unless enabled, then fixed
+   * width (16px icon + 2*10px margin) for the actions column. */
+  grid-template-columns:
+    1fr 15% 15%
+    var(--wakeups-column-width) var(--cpu-wait-column-width)
+    var(--swap-column-width) var(--disk-read-column-width)
+    var(--disk-write-column-width) var(--major-faults-column-width)
+    var(--uptime-column-width)
+    36px;
   grid-auto-rows: 2em;
   width: 100%;
 }
@@ -171,9 +185,51 @@ body.tab-view #tab-search-status {
   padding: 0;
 }
 
+/* Not all rows have a cell for each column, keep the actions in the last one. */
+tr > :last-child {
+  grid-column: -2;
+}
+
 .cpu,
-.memory {
+.memory,
+td.optional-column {
   text-align: end;
+}
+
+/* Optional columns, enabled from the menu of the actions column header. */
+#process-table.show-wakeups {
+  --wakeups-column-width: 7em;
+}
+#process-table.show-cpu-wait {
+  --cpu-wait-column-width: 7em;
+}
+#process-table.show-swap {
+  --swap-column-width: 7em;
+}
+#process-table.show-disk-read {
+  --disk-read-column-width: 7em;
+}
+#process-table.show-disk-write {
+  --disk-write-column-width: 7em;
+}
+#process-table.show-major-faults {
+  --major-faults-column-width: 7em;
+}
+#process-table.show-uptime {
+  --uptime-column-width: 7em;
+}
+#process-table:not(.show-wakeups) .wakeups,
+#process-table:not(.show-cpu-wait) .cpu-wait,
+#process-table:not(.show-swap) .swap,
+#process-table:not(.show-disk-read) .disk-read,
+#process-table:not(.show-disk-write) .disk-write,
+#process-table:not(.show-major-faults) .major-faults,
+#process-table:not(.show-uptime) .uptime {
+  visibility: hidden;
+  padding: 0;
+}
+body.tab-view #process-thead > tr > .optional-column {
+  display: none;
 }
 
 #process-thead > tr {
@@ -397,10 +453,10 @@ body.tab-view tr[selected] > td {
   color: var(--text-color-list-item-hover);
 }
 
-/* Tab names and thread summary text can extend into memory and CPU columns. */
+/* Tab names and thread summary text can extend into all the data columns. */
 .window > :first-child,
 .thread-summary > :first-child {
-  grid-column: 1 / 4;
+  grid-column: 1 / -2;
 }
 
 /* Thread names can extend into the memory column. */
@@ -460,6 +516,31 @@ body.tab-view {
     font-size: 1.25em;
   }
 }
+#column-kill {
+  padding: 0;
+}
+#column-options-button {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: url("chrome://global/skin/icons/settings.svg") no-repeat center;
+  -moz-context-properties: fill;
+  fill: currentColor;
+  outline-offset: -4px;
+  &:hover {
+    background-color: var(--button-background-color-hover);
+    color: var(--button-text-color-hover);
+    &:active {
+      background-color: var(--button-background-color-active);
+      color: var(--button-text-color-active);
+    }
+  }
+}
+
 .clickable {
   background-repeat: no-repeat;
   background-position: right 4px center;

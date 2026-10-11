@@ -8,6 +8,10 @@ about-processes-title = Process Manager
 # The Actions column
 about-processes-column-action =
     .title = Actions
+# Button in the header of the Actions column, opening a menu to show or hide optional columns.
+about-processes-column-options-button =
+    .title = Choose columns
+    .aria-label = Choose columns
 
 ## Tooltips
 
@@ -77,6 +81,23 @@ about-processes-column-cpu-total-tab = CPU
     .title = % of total CPU capacity across all cores
 # Shortened from the shared "Memory" to reclaim column width in the narrower view shown in a sidebar.
 about-processes-column-memory-resident-tab = RAM
+
+## Optional column headers, also used as the items of the menu showing or hiding them.
+
+about-processes-column-wakeups = Wakeups
+    .title = Times per second that threads were switched onto a CPU, mostly because they woke up. Frequent wakeups keep the CPU from saving power.
+about-processes-column-cpu-wait = CPU wait
+    .title = Share of time that threads were ready to run but waiting for a CPU core to be available
+about-processes-column-swap = Swap
+    .title = Memory moved out of RAM into swap space
+about-processes-column-disk-read = Disk read
+    .title = Data read from storage per second
+about-processes-column-disk-write = Disk write
+    .title = Data written to storage per second
+about-processes-column-major-faults = Major faults
+    .title = Times per second that memory had to be loaded from storage, for instance from swap
+about-processes-column-uptime = Uptime
+    .title = Time since the process started
 
 ## Process names
 ## Variables:
@@ -281,6 +302,29 @@ about-processes-total-memory-size-no-change = { NUMBER($total, maximumFractionDi
 
 # A tab’s memory of a gigabyte or more, shown to one decimal place.
 about-processes-tab-memory-gb = { NUMBER($total, minimumFractionDigits: 1, maximumFractionDigits: 1) }{ $totalUnit }
+
+## Displaying optional columns
+
+# Variables:
+#    $rate (Number) The number of events per second.
+about-processes-rate-per-second = { NUMBER($rate, maximumFractionDigits: 0) }/s
+
+# Variables:
+#    $amount (Number) The amount of data transferred per second.
+#    $unit (String) The unit in which to display $amount. See the definitions
+#                   of `memory-unit-*`.
+about-processes-data-rate = { NUMBER($amount, maximumFractionDigits: 0) }{ $unit }/s
+
+# Variables:
+#    $percent (Number) The share of time spent waiting for a CPU core. Always >= 0,
+#                      may exceed 1 for processes with several waiting threads.
+about-processes-cpu-wait = { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+
+# Variables:
+#    $duration (Number) The time since the process started.
+#    $unit (String) The unit in which to display $duration. See the definitions
+#                   of `duration-unit-*`.
+about-processes-uptime = { NUMBER($duration, maximumFractionDigits: 1) }{ $unit }
 
 ## Duration units
 

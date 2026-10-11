@@ -20,6 +20,10 @@
     <link rel="localization" href="branding/brand.ftl" />
     <script src="chrome://global/content/customElements.js"></script>
     <script src="chrome://global/content/aboutProcesses.js"></script>
+    <script
+      type="module"
+      src="chrome://global/content/elements/panel-list.mjs"
+    ></script>
     <link rel="stylesheet" href="chrome://global/content/aboutProcesses.css" />
   </head>
   <body>
@@ -72,8 +76,69 @@
             ></button>
           </th>
           <!--CPU time-->
+          <th class="clickable-header optional-column wakeups">
+            <button
+              class="clickable"
+              id="column-wakeups"
+              data-l10n-id="about-processes-column-wakeups"
+              aria-sort="none"
+            ></button>
+          </th>
+          <th class="clickable-header optional-column cpu-wait">
+            <button
+              class="clickable"
+              id="column-cpu-wait"
+              data-l10n-id="about-processes-column-cpu-wait"
+              aria-sort="none"
+            ></button>
+          </th>
+          <th class="clickable-header optional-column swap">
+            <button
+              class="clickable"
+              id="column-swap"
+              data-l10n-id="about-processes-column-swap"
+              aria-sort="none"
+            ></button>
+          </th>
+          <th class="clickable-header optional-column disk-read">
+            <button
+              class="clickable"
+              id="column-disk-read"
+              data-l10n-id="about-processes-column-disk-read"
+              aria-sort="none"
+            ></button>
+          </th>
+          <th class="clickable-header optional-column disk-write">
+            <button
+              class="clickable"
+              id="column-disk-write"
+              data-l10n-id="about-processes-column-disk-write"
+              aria-sort="none"
+            ></button>
+          </th>
+          <th class="clickable-header optional-column major-faults">
+            <button
+              class="clickable"
+              id="column-major-faults"
+              data-l10n-id="about-processes-column-major-faults"
+              aria-sort="none"
+            ></button>
+          </th>
+          <th class="clickable-header optional-column uptime">
+            <button
+              class="clickable"
+              id="column-uptime"
+              data-l10n-id="about-processes-column-uptime"
+              aria-sort="none"
+            ></button>
+          </th>
           <th id="column-kill" data-l10n-id="about-processes-column-action">
-            ⚙
+            <button
+              id="column-options-button"
+              aria-haspopup="menu"
+              data-l10n-id="about-processes-column-options-button"
+              hidden
+            ></button>
           </th>
           <!-- Kill button. -->
         </tr>
@@ -125,5 +190,42 @@
         </tr>
       </tfoot>
     </table>
+    <panel-list id="column-options-menu">
+      <panel-item
+        type="checkbox"
+        data-column="wakeups"
+        data-l10n-id="about-processes-column-wakeups"
+      ></panel-item>
+      <panel-item
+        type="checkbox"
+        data-column="cpu-wait"
+        data-l10n-id="about-processes-column-cpu-wait"
+      ></panel-item>
+      <panel-item
+        type="checkbox"
+        data-column="swap"
+        data-l10n-id="about-processes-column-swap"
+      ></panel-item>
+      <panel-item
+        type="checkbox"
+        data-column="disk-read"
+        data-l10n-id="about-processes-column-disk-read"
+      ></panel-item>
+      <panel-item
+        type="checkbox"
+        data-column="disk-write"
+        data-l10n-id="about-processes-column-disk-write"
+      ></panel-item>
+      <panel-item
+        type="checkbox"
+        data-column="major-faults"
+        data-l10n-id="about-processes-column-major-faults"
+      ></panel-item>
+      <panel-item
+        type="checkbox"
+        data-column="uptime"
+        data-l10n-id="about-processes-column-uptime"
+      ></panel-item>
+    </panel-list>
   </body>
 </html>
