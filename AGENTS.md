@@ -72,3 +72,64 @@ You can find the review identifier by inspecting the commit log with:
 - Never put `DONTBUILD` (or `CLOSED TREE`) in the `-m` message of `mach try fuzzy` / `mach try compare` when you want builds to actually run. The Gecko decision task scans the message and on `DONTBUILD` strips every task from the graph: the decision task itself succeeds (Treeherder shows green) but no builds are scheduled.
 - When doing Android and Desktop front-end-only changes, use the special `./mach build faster` to skip all C++/Rust compilation.
 - Conversely, for C/C++/Obj-C/Rust only changes you can use the special `./mach build binaries` to skip all front-end-related tasks.
+
+# After making changes
+
+At the workspace root:
+
+	pnpm lint  # runs oxlint
+	pnpm check # runs svelte-check
+	pnpm test  # runs vitest
+
+Never `git commit -a` because there may be others working; stage changes manually.
+
+Then automatically commit your changes with this commit template:
+
+	subsystem: short one-line description; semicolon if multiple changes
+
+	Model-output: model name e.g. Claude Fable 5.1
+
+	<prompt>
+
+	user prompt, verbatim
+
+	AskUserQuestion question-answers, if any
+
+	</prompt>
+
+	<slop>
+
+	model's response at the end of the dialogue, verbatim, in markdown format
+
+	</slop>
+
+"(mid-turn)" if user added something mid-turn; multiple &lt;prompt>&lt;/prompt> &lt;slop>&lt;/slop> ... if the conversation had several real turns.
+
+If acting on code reviews from Codex, Claude, or some other agent, inside the beginning of &lt;slop>, add one per review:
+
+	<review model="model e.g. gpt-6-astra" reasoning_effort="effort e.g. xhigh">
+
+	...
+
+	</review>
+
+# Code review after each commit
+
+After each commit you make, get it reviewed by Codex and by Claude, all at xhigh reasoning:
+
+	codex review --commit <sha> -c model="gpt-6-astra" -c model_reasoning_effort="xhigh"
+	codex review --commit <sha> -c model="gpt-6.1-sol" -c model_reasoning_effort="xhigh"
+	codex review --commit <sha> -c model="gpt-5.6-sol" -c model_reasoning_effort="xhigh"
+	claude -p --model claude-fable-5-1 --effort xhigh "/code-review xhigh commit <sha>"
+	claude -p --model claude-opus-5-5 --effort xhigh "/code-review xhigh commit <sha>"
+
+Notes:
+
+- If you made several commits, ensure reviews cover them all: either review each commit, or, a whole batch:
+	- codex: replace `--commit <sha>` with `--base <sha before your first commit>`
+	- claude: replace `commit <sha>` with `commits <sha before your first commit>..<sha of your last commit>`
+- Codex is already configured globally to never ask for permission and run unsandboxed.
+- A review can take several minutes; start them all in the background. Reviewers read the working tree, so don't edit files until the reviews are in.
+- Review findings are from **fallible machines eager to find issues**: think and prefer fixes that don't add a bunch of code we don't really need.
+- Once all the reviews are in, fix the oversights that are really worth fixing, in one or more commits. If nothing, say briefly why the findings didn't warrant changes.
+- Do _not_ send follow-up fixes through another review. (Exception: the follow-up grew into something substantial beyond addressing the findings.)
