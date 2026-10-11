@@ -88,6 +88,12 @@ const OPTIONAL_COLUMNS = [
   "uptime",
 ];
 const THREAD_COLUMNS = ["wakeups", "cpu-wait"];
+// The optional columns that the current platform gathers statistics for.
+const AVAILABLE_COLUMNS =
+  {
+    linux: OPTIONAL_COLUMNS,
+    win: ["wakeups", "shared-memory", "peak-memory", "major-faults", "uptime"],
+  }[AppConstants.platform] ?? [];
 
 /**
  * The increase of a counter between two samples, per ns.
@@ -480,6 +486,10 @@ var State = {
       // equal for a short amount of time, which can cause test failures when
       // a forced update of the display is triggered in the meantime.
       let newSnapshot = await this._promiseSnapshot();
+      if (this._latest && newSnapshot.date < this._latest.date) {
+        // A concurrent update started later but finished first.
+        return;
+      }
       this._previous = this._latest;
       this._latest = newSnapshot;
     }
@@ -1750,17 +1760,25 @@ class ProcessesController {
   _updateLastMouseEvent() {
     this._lastMouseEvent = Date.now();
   }
-  _initOptionalColumns() {
+  _readOptionalColumnsPref() {
     let shown = Services.prefs
       .getStringPref(OPTIONAL_COLUMNS_PREF, "")
-      .split(",");
-    this._optionalColumns = new Set(
-      OPTIONAL_COLUMNS.filter(column => shown.includes(column))
-    );
+      .split(",")
+      .map(column => column.trim());
+    return new Set(AVAILABLE_COLUMNS.filter(column => shown.includes(column)));
+  }
+  _initOptionalColumns() {
+    if (!AVAILABLE_COLUMNS.length) {
+      return;
+    }
+    this._optionalColumns = this._readOptionalColumnsPref();
     this._applyOptionalColumns();
 
     let button = document.getElementById("column-options-button");
     let menu = document.getElementById("column-options-menu");
+    for (let item of menu.children) {
+      item.hidden = !AVAILABLE_COLUMNS.includes(item.dataset.column);
+    }
     button.hidden = false;
     button.addEventListener("click", event => menu.toggle(event));
     menu.addEventListener("click", event => {
@@ -1768,6 +1786,8 @@ class ProcessesController {
       if (!column) {
         return;
       }
+      // Another about:processes tab may have changed the pref.
+      this._optionalColumns = this._readOptionalColumnsPref();
       if (!this._optionalColumns.delete(column)) {
         this._optionalColumns.add(column);
       }
@@ -1776,9 +1796,9 @@ class ProcessesController {
         OPTIONAL_COLUMNS.filter(c => this._optionalColumns.has(c)).join(",")
       );
       this._applyOptionalColumns();
-      // Sample right away rather than waiting for the next update to start
-      // gathering the statistics of a newly shown column.
-      this.update(true);
+      // Sample now if the last sample is old enough, rather than waiting for
+      // the next update to gather the statistics of a newly shown column.
+      State.update().then(() => this._updateDisplay(true));
     });
   }
   _applyOptionalColumns() {
@@ -1810,6 +1830,7 @@ class ProcessesController {
       header.setAttribute("aria-sort", "none");
       header.classList.remove("arrow-up", "arrow-down");
       this._sortColumn = null;
+      this._sortAscendent = true;
     }
   }
   _initHangReports() {

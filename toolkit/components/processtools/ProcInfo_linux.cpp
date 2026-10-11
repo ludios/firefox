@@ -228,7 +228,8 @@ static Maybe<uint64_t> FindProcFileValue(const char* aContent,
     if (*line == '\n') {
       line++;
     }
-    if (!strncmp(line, aKey, keyLength)) {
+    // A line without a newline may have been cut off by the end of the buffer.
+    if (!strncmp(line, aKey, keyLength) && strchr(line, '\n')) {
       return Some(uint64_t(strtoull(line + keyLength, nullptr, 10)));
     }
   }
@@ -237,7 +238,9 @@ static Maybe<uint64_t> FindProcFileValue(const char* aContent,
 
 static void ReadExtendedProcessInfo(base::ProcessId aPid, ProcInfo& aInfo) {
   char path[64];
-  char buffer[4096];
+  // /proc/<pid>/status lists the supplementary groups before the memory
+  // fields, which can take a few kilobytes.
+  char buffer[16384];
 
   SprintfLiteral(path, "/proc/%u/status", unsigned(aPid));
   if (ReadProcFile(path, buffer, sizeof(buffer))) {
@@ -296,8 +299,11 @@ static void ReadExtendedThreadInfo(base::ProcessId aPid, base::ProcessId aTid,
   // and the number of times the thread was switched onto a CPU.
   char buffer[128];
   unsigned long long cpuWaitTime, contextSwitches;
+  // Kernels without scheduler statistics report "0 0 0", while a thread that
+  // has run has been switched onto a CPU at least once.
   if (ReadProcFile(path, buffer, sizeof(buffer)) &&
-      sscanf(buffer, "%*u %llu %llu", &cpuWaitTime, &contextSwitches) == 2) {
+      sscanf(buffer, "%*u %llu %llu", &cpuWaitTime, &contextSwitches) == 2 &&
+      contextSwitches) {
     aInfo.cpuWaitTime = Some(uint64_t(cpuWaitTime));
     aInfo.contextSwitches = Some(uint64_t(contextSwitches));
   }

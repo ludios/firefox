@@ -1056,12 +1056,6 @@ enum WebIDLProcType {
  "unknown",
 };
 
-/**
- * These dictionaries hold information about Firefox running processes and
- * threads.
- *
- * See widget/ProcInfo.h for fields documentation.
- */
 dictionary ProcInfoOptions {
   // Whether to fill in the optional fields of the process dictionaries.
   boolean extendedProcessInfo = false;
@@ -1071,6 +1065,12 @@ dictionary ProcInfoOptions {
   boolean extendedThreadInfo = false;
 };
 
+/**
+ * These dictionaries hold information about Firefox running processes and
+ * threads.
+ *
+ * See widget/ProcInfo.h for fields documentation.
+ */
 dictionary ThreadInfoDictionary {
   long long tid = 0;
   DOMString name = "";

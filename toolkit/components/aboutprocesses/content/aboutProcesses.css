@@ -102,10 +102,11 @@ body.tab-view :is(.totals-row, .bulk-summary-row) {
 tr {
   display: grid;
   /* Flexible width for the name column, 15% width for the memory and CPU column,
-   * then the optional columns, which have no width unless enabled, then fixed
-   * width (16px icon + 2*10px margin) for the actions column. */
+   * then the optional columns, which have no width unless enabled and shrink
+   * to keep the actions column in view, then fixed width (16px icon + 2*10px
+   * margin) for the actions column. */
   grid-template-columns:
-    1fr 15% 15%
+    minmax(min(12em, 25%), 1fr) 15% 15%
     var(--wakeups-column-width) var(--cpu-wait-column-width)
     var(--shared-memory-column-width) var(--peak-memory-column-width)
     var(--swap-column-width) var(--disk-read-column-width)
@@ -201,31 +202,31 @@ td.optional-column {
 
 /* Optional columns, enabled from the menu of the actions column header. */
 #process-table.show-wakeups {
-  --wakeups-column-width: 7em;
+  --wakeups-column-width: minmax(0, 7em);
 }
 #process-table.show-cpu-wait {
-  --cpu-wait-column-width: 7em;
+  --cpu-wait-column-width: minmax(0, 7em);
 }
 #process-table.show-shared-memory {
-  --shared-memory-column-width: 7em;
+  --shared-memory-column-width: minmax(0, 7em);
 }
 #process-table.show-peak-memory {
-  --peak-memory-column-width: 7em;
+  --peak-memory-column-width: minmax(0, 7em);
 }
 #process-table.show-swap {
-  --swap-column-width: 7em;
+  --swap-column-width: minmax(0, 7em);
 }
 #process-table.show-disk-read {
-  --disk-read-column-width: 7em;
+  --disk-read-column-width: minmax(0, 7em);
 }
 #process-table.show-disk-write {
-  --disk-write-column-width: 7em;
+  --disk-write-column-width: minmax(0, 7em);
 }
 #process-table.show-major-faults {
-  --major-faults-column-width: 7em;
+  --major-faults-column-width: minmax(0, 7em);
 }
 #process-table.show-uptime {
-  --uptime-column-width: 7em;
+  --uptime-column-width: minmax(0, 7em);
 }
 #process-table:not(.show-wakeups) .wakeups,
 #process-table:not(.show-cpu-wait) .cpu-wait,
