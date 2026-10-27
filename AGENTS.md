@@ -3,7 +3,8 @@
 # Don't edit the generated sections here: change the options below or the template, then run `clank-right update .` in this repo.
 # Only the options below and the sections between "Thoughts for when there is programming involved" and "Committing" are this project's own; every other section is overwritten.
 
-conventions = "upstream"
+conventions         = "upstream"
+authorship_comments = false
 # No `languages`: here they would only add advice to use pnpm and uv, but mach runs Firefox's Node and Python tooling.
 -->
 
