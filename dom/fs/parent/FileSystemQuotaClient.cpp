@@ -86,6 +86,11 @@ Result<quota::UsageInfo, nsresult> FileSystemQuotaClient::InitOrigin(
   QM_TRY(MOZ_TO_RESULT(
       data::FileSystemDatabaseManager::RescanUsages(conn, aOriginMetadata)));
 
+  // Pages still in the WAL (left by a crash, or just written by RescanUsages)
+  // would otherwise reach the database uncounted when conn closes.
+  QM_WARNONLY_TRY(
+      MOZ_TO_RESULT(conn->ExecuteSimpleSQL("PRAGMA wal_checkpoint;"_ns)));
+
   return data::FileSystemDatabaseManager::GetUsage(conn, aOriginMetadata)
       .mapErr(toNSResult);
 }
