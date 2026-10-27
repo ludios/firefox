@@ -239,10 +239,7 @@ TrackingDBService.prototype = {
     let db = await Sqlite.openConnection({ path: lazy.DB_PATH });
 
     try {
-      // Events are saved in a transaction per top-level navigation. A rollback
-      // journal syncs three times for each; in WAL mode at synchronous = NORMAL
-      // only checkpoints sync.
-      await db.execute("PRAGMA journal_mode = WAL");
+      await db.execute("PRAGMA journal_mode = WAL").catch(console.error);
 
       // Check to see if we need to perform any migrations.
       let dbVersion = parseInt(await db.getSchemaVersion());
