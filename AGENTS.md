@@ -4,8 +4,7 @@
 # Only the options below and the sections between "Thoughts for when there is programming involved" and "Committing" are this project's own; every other section is overwritten.
 
 conventions = "upstream"
-# Not javascript or python: mach runs their tooling, not pnpm or uv.
-languages   = ["cpp", "rust"]
+# No `languages`: here they would only add advice to use pnpm and uv, but mach runs Firefox's Node and Python tooling.
 -->
 
 # Before starting
