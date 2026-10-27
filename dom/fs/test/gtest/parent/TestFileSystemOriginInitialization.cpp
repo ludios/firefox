@@ -267,10 +267,14 @@ TEST_F(TestFileSystemOriginInitialization, EmptyFileSystemDatabase) {
   ASSERT_NO_FATAL_FAILURE(ShutdownTemporaryStorage());
 
   // After temporary storage shutdown,
-  // * origin usage is still the same as before shutdown
+  // * origin usage has grown, since closing the connection checkpointed the
+  //   WAL into the database
   // * cached origin usage is zero
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageGreaterThan(usageNow, beforeShutdownUsage));
+
+  uint64_t afterShutdownUsage;
+  ASSERT_NO_FATAL_FAILURE(GetUsageValue(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
   ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, 0u));
@@ -279,13 +283,13 @@ TEST_F(TestFileSystemOriginInitialization, EmptyFileSystemDatabase) {
   ASSERT_NO_FATAL_FAILURE(InitializeTemporaryStorage());
 
   // After repeated temporary storage initialization,
-  // * origin usage is still the same as before shutdown
+  // * origin usage is still the same as after shutdown
   // * GetOriginUsage and GetCachedOriginUsage should agree again
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 }
 
 TEST_F(TestFileSystemOriginInitialization, EmptyFileSystemFile) {
@@ -333,10 +337,14 @@ TEST_F(TestFileSystemOriginInitialization, EmptyFileSystemFile) {
   ASSERT_NO_FATAL_FAILURE(ShutdownTemporaryStorage());
 
   // After temporary storage shutdown,
-  // * origin usage is still the same as before shutdown
+  // * origin usage has grown, since closing the connection checkpointed the
+  //   WAL into the database
   // * cached origin usage is zero
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageGreaterThan(usageNow, beforeShutdownUsage));
+
+  uint64_t afterShutdownUsage;
+  ASSERT_NO_FATAL_FAILURE(GetUsageValue(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
   ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, 0u));
@@ -345,13 +353,13 @@ TEST_F(TestFileSystemOriginInitialization, EmptyFileSystemFile) {
   ASSERT_NO_FATAL_FAILURE(InitializeTemporaryStorage());
 
   // After repeated temporary storage initialization,
-  // * origin usage is still the same as before shutdown
+  // * origin usage is still the same as after shutdown
   // * GetOriginUsage and GetCachedOriginUsage should agree
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 }
 
 TEST_F(TestFileSystemOriginInitialization, NonEmptyFileSystemFile) {
@@ -420,10 +428,14 @@ TEST_F(TestFileSystemOriginInitialization, NonEmptyFileSystemFile) {
   ASSERT_NO_FATAL_FAILURE(ShutdownTemporaryStorage());
 
   // After temporary storage shutdown,
-  // * origin usage is still the same as before shutdown
+  // * origin usage has grown, since closing the connection checkpointed the
+  //   WAL into the database
   // * cached origin usage is zero
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageGreaterThan(usageNow, beforeShutdownUsage));
+
+  uint64_t afterShutdownUsage;
+  ASSERT_NO_FATAL_FAILURE(GetUsageValue(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
   ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, 0u));
@@ -432,13 +444,13 @@ TEST_F(TestFileSystemOriginInitialization, NonEmptyFileSystemFile) {
   ASSERT_NO_FATAL_FAILURE(InitializeTemporaryStorage());
 
   // After repeated temporary storage initialization,
-  // * origin usage is still the same as before shutdown
+  // * origin usage is still the same as after shutdown
   // * GetOriginUsage and GetCachedOriginUsage should agree again
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 }
 
 TEST_F(TestFileSystemOriginInitialization,
@@ -512,14 +524,21 @@ TEST_F(TestFileSystemOriginInitialization,
   ASSERT_NO_FATAL_FAILURE(ShutdownTemporaryStorage());
 
   // After temporary storage shutdown,
-  // * static database usage is the same as before writing
-  // * origin usage is still the same as before shutdown
+  // * static database usage is the same as before writing, plus what closing
+  //   the connection checkpointed from the WAL into the database
+  // * origin usage is the same as before shutdown, plus that growth
   // * cached origin usage is zero
   ASSERT_NO_FATAL_FAILURE(GetStaticDatabaseUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeWriteUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageGreaterThan(usageNow, beforeWriteUsage));
+
+  uint64_t staticDatabaseUsage;
+  ASSERT_NO_FATAL_FAILURE(GetUsageValue(usageNow, staticDatabaseUsage));
+
+  const uint64_t afterShutdownUsage =
+      beforeShutdownUsage + (staticDatabaseUsage - beforeWriteUsage);
 
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
   ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, 0u));
@@ -528,17 +547,17 @@ TEST_F(TestFileSystemOriginInitialization,
   ASSERT_NO_FATAL_FAILURE(InitializeTemporaryStorage());
 
   // After repeated temporary storage initialization,
-  // * static database usage is the same as before shutdown
+  // * static database usage is the same as after shutdown
   // * GetStaticDatabaseUsage, GetOriginUsage and GetCachedOriginUsage should
   // all agree again
   ASSERT_NO_FATAL_FAILURE(GetStaticDatabaseUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 }
 
 TEST_F(TestFileSystemOriginInitialization, RemovedFileSystemFile) {
@@ -600,10 +619,14 @@ TEST_F(TestFileSystemOriginInitialization, RemovedFileSystemFile) {
   ASSERT_NO_FATAL_FAILURE(ShutdownTemporaryStorage());
 
   // After temporary storage shutdown,
-  // * origin usage is still the same as before shutdown
+  // * origin usage has grown, since closing the connection checkpointed the
+  //   WAL into the database
   // * cached origin usage is zero
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageGreaterThan(usageNow, beforeShutdownUsage));
+
+  uint64_t afterShutdownUsage;
+  ASSERT_NO_FATAL_FAILURE(GetUsageValue(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
   ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, 0u));
@@ -612,13 +635,13 @@ TEST_F(TestFileSystemOriginInitialization, RemovedFileSystemFile) {
   ASSERT_NO_FATAL_FAILURE(InitializeTemporaryStorage());
 
   // After repeated temporary storage initialization,
-  // * origin usage is still the same as before shutdown
+  // * origin usage is still the same as after shutdown
   // * GetOriginUsage and GetCachedOriginUsage should agree again
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetCachedOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, beforeShutdownUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, afterShutdownUsage));
 }
 
 }  // namespace mozilla::dom::fs::test
