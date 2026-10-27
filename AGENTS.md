@@ -1,3 +1,9 @@
+<!-- clank-right
+conventions = "upstream"
+# Not javascript or python: mach runs their tooling, not pnpm or uv.
+languages   = ["cpp", "rust"]
+-->
+
 # Global instructions
 Limit the amount of comments you put in the code to a strict minimum. You should almost never add comments, except sometimes on non-trivial code, function definitions if the arguments aren't self-explanatory, and class definitions and their members.
 
