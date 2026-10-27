@@ -68,7 +68,8 @@ already_AddRefed<QuotaObject> GetQuotaObjectFromName(const char* zName) {
 // A database opened with walQuota=0 keeps its WAL out of quota tracking, like
 // a rollback journal.
 bool IsWalQuotaTracked(const char* zName) {
-  return sqlite3_uri_boolean(zName, "walQuota", 1);
+  const char* walQuota = sqlite3_uri_parameter(zName, "walQuota");
+  return !walQuota || !nsDependentCString(walQuota).EqualsLiteral("0");
 }
 
 void MaybeEstablishQuotaControl(const char* zName, QuotaFile* pFile,
