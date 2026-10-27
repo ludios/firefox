@@ -921,6 +921,12 @@ nsresult PermissionManager::OpenDatabase(nsIFile* aPermissionsFile) {
     rv = storage->OpenDatabase(aPermissionsFile,
                                mozIStorageService::CONNECTION_DEFAULT,
                                getter_AddRefs(data->mDBConn));
+    if (NS_SUCCEEDED(rv)) {
+      // Every permission change and recorded user interaction is its own
+      // transaction. A rollback journal syncs three times for each; in WAL
+      // mode at synchronous = NORMAL only checkpoints sync.
+      (void)data->mDBConn->ExecuteSimpleSQL("PRAGMA journal_mode = WAL"_ns);
+    }
   }
   return rv;
 }
