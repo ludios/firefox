@@ -253,11 +253,13 @@ Result<nsCOMPtr<nsIFileURL>, QMResult> GetDatabaseFileURL(
     return keyClause;
   }();
 
+  // Metadata transactions write to the WAL, so if it counted towards quota, a
+  // full origin could no longer create or remove entries.
   nsCOMPtr<nsIFileURL> result;
-  QM_TRY(QM_TO_RESULT(
-      NS_MutateURI(mutator)
-          .SetQuery("cache=private"_ns + directoryLockIdClause + keyClause)
-          .Finalize(result)));
+  QM_TRY(QM_TO_RESULT(NS_MutateURI(mutator)
+                          .SetQuery("cache=private&walQuota=0"_ns +
+                                    directoryLockIdClause + keyClause)
+                          .Finalize(result)));
 
   return result;
 }

@@ -65,12 +65,21 @@ already_AddRefed<QuotaObject> GetQuotaObjectFromName(const char* zName) {
                                       NS_ConvertUTF8toUTF16(zName));
 }
 
+// A database opened with walQuota=0 keeps its WAL out of quota tracking, like
+// a rollback journal.
+bool IsWalQuotaTracked(const char* zName) {
+  return sqlite3_uri_boolean(zName, "walQuota", 1);
+}
+
 void MaybeEstablishQuotaControl(const char* zName, QuotaFile* pFile,
                                 int flags) {
   MOZ_ASSERT(pFile);
   MOZ_ASSERT(!pFile->quotaObject);
 
   if (!(flags & (SQLITE_OPEN_URI | SQLITE_OPEN_WAL))) {
+    return;
+  }
+  if ((flags & SQLITE_OPEN_WAL) && !IsWalQuotaTracked(zName)) {
     return;
   }
   pFile->quotaObject = GetQuotaObjectFromName(zName);
@@ -380,7 +389,8 @@ int QuotaDelete(sqlite3_vfs* vfs, const char* zName, int syncDir) {
   int rc;
   RefPtr<QuotaObject> quotaObject;
 
-  if (StringEndsWith(nsDependentCString(zName), "-wal"_ns)) {
+  if (StringEndsWith(nsDependentCString(zName), "-wal"_ns) &&
+      IsWalQuotaTracked(zName)) {
     quotaObject = GetQuotaObjectFromName(zName);
   }
 

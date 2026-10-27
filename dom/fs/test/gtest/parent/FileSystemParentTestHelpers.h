@@ -33,8 +33,6 @@ class FileSystemDataManager;
 
 namespace mozilla::dom::fs::test {
 
-int GetPageSize();
-
 const Name& GetTestFileName();
 
 uint64_t BytesOfName(const Name& aName);

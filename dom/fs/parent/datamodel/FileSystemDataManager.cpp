@@ -152,6 +152,12 @@ Result<ResultConnection, QMResult> GetStorageConnection(
         QM_TO_RESULT(result->ExecuteSimpleSQL("PRAGMA page_size = 8192;"_ns)));
   }
 
+  // A rollback journal costs three fsyncs per transaction (the journal, its
+  // directory, the database); in WAL mode at synchronous = NORMAL only
+  // checkpoints sync. This must come after the page size is set.
+  QM_TRY(
+      QM_TO_RESULT(result->ExecuteSimpleSQL("PRAGMA journal_mode = WAL;"_ns)));
+
   return result;
 }
 

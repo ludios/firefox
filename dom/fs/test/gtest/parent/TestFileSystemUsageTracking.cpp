@@ -42,15 +42,14 @@ TEST_F(TestFileSystemUsageTracking, CheckUsageBeforeAnyFilesOnDisk) {
   ASSERT_NO_FATAL_FAILURE(CreateNewEmptyFile(testFileId));
 
   // After a new file has been created (only in the database),
-  // * database usage has increased
+  // * database usage is the same (the new pages are in the WAL, which doesn't
+  //   count towards usage, until a checkpoint copies them into the database)
   // * GetDatabaseUsage and GetOriginUsage should agree
-  const auto increasedDbUsage = initialDbUsage + 2 * GetPageSize();
-
   ASSERT_NO_FATAL_FAILURE(GetDatabaseUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, increasedDbUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, initialDbUsage));
 
   ASSERT_NO_FATAL_FAILURE(GetOriginUsage(usageNow));
-  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, increasedDbUsage));
+  ASSERT_NO_FATAL_FAILURE(CheckUsageEqualTo(usageNow, initialDbUsage));
 }
 
 TEST_F(TestFileSystemUsageTracking, WritesToFilesShouldIncreaseUsage) {

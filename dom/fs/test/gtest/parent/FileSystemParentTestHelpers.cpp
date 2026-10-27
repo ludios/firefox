@@ -32,8 +32,6 @@ const int sExceedsPreallocation = sPage;
 
 }  // namespace
 
-int GetPageSize() { return sPage; }
-
 const Name& GetTestFileName() {
   static Name testFileName = []() {
     nsCString testCFileName;
