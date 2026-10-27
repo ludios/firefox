@@ -554,6 +554,18 @@
     "minbytes": 0,
     "maxbytes": 7208
   },
+  "{profile}\\permissions.sqlite-shm": {
+    "mincount": 0,
+    "maxcount": 4,
+    "minbytes": 0,
+    "maxbytes": 131072
+  },
+  "{profile}\\permissions.sqlite-wal": {
+    "mincount": 0,
+    "maxcount": 32,
+    "minbytes": 0,
+    "maxbytes": 131072
+  },
   "{profile}\\pkcs11.txt": {
     "mincount": 0,
     "maxcount": 4,
