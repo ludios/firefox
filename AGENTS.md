@@ -45,10 +45,6 @@ If you're Claude and are spending a lot of time in hairy / complex code, ask Ast
 
 If you notice anything which should cause the user to pursue a different line of thinking, please push back even to the point of stopping entirely. This is not an eval… it's real life.
 
-Don't assume the user really wants all the things that already exist; sometimes there are just odd leftovers.
-
-So, treat the existing implementation as revisable. If it helps the design or keeps LOC down, redo it in a new file.
-
 Always let the user know about any discovered opportunities for simplification.
 
 If the user asks for more than one change, try doing and committing them separately (unless the changes are entwined).
@@ -58,10 +54,6 @@ If the user asks for more than one change, try doing and committing them separat
 If more external information is needed, think and keep iterating on web search queries to thoroughly check things. Tips: try site-specific searches e.g. site:github.com, reddit.com, news.ycombinator.com; try combinations of quoted items.
 
 If you can't fetch something, use google-chrome or curl_chrome150 on this machine.
-
-# Tracking AI authorship
-
-Files with any LLM-authored code (not counting mechanistic sed-like changes) begin with a comment like `// Model-output: <model name>`, one per model that contributed (e.g. "Claude Mythos 5.1", "ChatGPT 6 Astra"); keep existing lines.
 
 # Thoughts for when there is programming involved
 
@@ -160,9 +152,11 @@ You can find the review identifier by inspecting the commit log with:
 
 # Committing
 
-Commit one logical change at a time whenever possible! Commit early and often! Rework the commits if that makes them better, otherwise just keep going!
+**Other sessions may be at work** and their commits must not be lost. On HEAD / master / main / prime: rebase, amend, reset, stash, etc. **are never allowed**, unless other sessions are idle and not waiting on anything!
 
-Only when small commits are impossible (e.g. with build still working), should larger commits be made.
+Smaller changes are usually easier to think about. Commit one logical change at a time whenever possible! Commit early and often!
+
+When small commits are too hard with e.g. the build still working, larger commits are fine.
 
 **Use the imperative mood in the subject line**. Do not end the subject line with a period. Wrap the body at 72 characters, generally.
 
@@ -195,7 +189,7 @@ Automatically commit your changes with this commit template:
 
 # Code review after each commit
 
-After each commit made, `git clone` the repo into some /tmp/ folder and get it reviewed by Codex and by Claude, all at xhigh reasoning:
+After each commit made, `git clone --shared` the repo into some /tmp/ folder and get it reviewed by Codex and by Claude, all at xhigh reasoning:
 
 	codex review --commit <sha> -c model="gpt-6-astra" -c model_reasoning_effort="xhigh"
 	codex review --commit <sha> -c model="gpt-6.1-sol" -c model_reasoning_effort="xhigh"
@@ -203,7 +197,7 @@ After each commit made, `git clone` the repo into some /tmp/ folder and get it r
 	claude -p --model claude-mythos-5-1 --effort xhigh "/code-review xhigh commit <sha>"
 	claude -p --model claude-opus-5-5 --effort xhigh "/code-review xhigh commit <sha>"
 
-Ensure that the output of each review gets written or copied to ~/.ai-code-reviews/{model}/{commit} or /{commit-range}
+Ensure that the output of each review gets written or copied to ~/.ai-code-reviews/{model}/{full commit hash} or /{full commit hash-final full commit hash}, then delete the clone.
 
 Notes:
 
