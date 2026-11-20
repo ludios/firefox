@@ -18768,6 +18768,14 @@
   mirror: always
   do_not_use_directly: true
 
+# IANA time zone (e.g. "America/Los_Angeles") that web content sees instead of
+# the system time zone; empty to not override. Resist Fingerprinting and
+# WebDriver BiDi's emulation.setTimezoneOverride take precedence.
+- name: privacy.timezone_override
+  type: DataMutexString
+  value: ""
+  mirror: always
+
 # Send "do not track" HTTP header, disabled by default.
 - name: privacy.donottrackheader.enabled
   type: bool

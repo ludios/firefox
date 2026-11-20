@@ -6,6 +6,7 @@
 
 #include "js/RealmOptions.h"
 #include "mozilla/SchedulerGroup.h"
+#include "mozilla/StaticPrefs_privacy.h"
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/Console.h"
 #include "mozilla/dom/WorkletGlobalScopeBinding.h"
@@ -134,6 +135,11 @@ JS::RealmOptions WorkletGlobalScope::CreateRealmOptions() const {
   if (ShouldResistFingerprinting(RFPTarget::JSDateTimeUTC)) {
     nsCString timeZone = nsRFPService::GetSpoofedJSTimeZone();
     options.behaviors().setTimeZoneOverride(timeZone.get());
+  } else {
+    const auto timeZone = StaticPrefs::privacy_timezone_override();
+    if (!timeZone->IsEmpty()) {
+      options.behaviors().setTimeZoneOverride(timeZone->get());
+    }
   }
   options.creationOptions().setAlwaysUseFdlibm(
       ShouldResistFingerprinting(RFPTarget::JSMathFdlibm));

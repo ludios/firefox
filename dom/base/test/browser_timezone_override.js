@@ -167,6 +167,42 @@ add_task(async function test_set_custom_offset_as_timezone_override() {
   BrowserTestUtils.removeTab(tab);
 });
 
+add_task(async function test_timezone_override_pref() {
+  const tab = BrowserTestUtils.addTab(gBrowser, PAGE_URL);
+  const browser = gBrowser.getBrowserForTab(tab);
+  await BrowserTestUtils.browserLoaded(browser);
+  const defaultTimezone = await getIntlTimezone(browser);
+  BrowserTestUtils.removeTab(tab);
+
+  const timezoneOverride = timezones.findLast(
+    timezone => timezone.timezoneId !== defaultTimezone
+  ).timezoneId;
+  await SpecialPowers.pushPrefEnv({
+    set: [["privacy.timezone_override", timezoneOverride]],
+  });
+
+  const overriddenTab = BrowserTestUtils.addTab(gBrowser, PAGE_URL);
+  const overriddenBrowser = gBrowser.getBrowserForTab(overriddenTab);
+  await BrowserTestUtils.browserLoaded(overriddenBrowser);
+
+  await assertTimezoneOverridden(overriddenBrowser, timezoneOverride);
+  is(
+    await SpecialPowers.spawn(overriddenBrowser, [], () => {
+      return content.eval(`new Promise(resolve => {
+        const blob = new Blob([
+          "postMessage(Intl.DateTimeFormat().resolvedOptions().timeZone)",
+        ]);
+        new Worker(URL.createObjectURL(blob)).onmessage = e => resolve(e.data);
+      })`);
+    }),
+    timezoneOverride,
+    "Intl time zone in a worker is overridden"
+  );
+
+  BrowserTestUtils.removeTab(overriddenTab);
+  await SpecialPowers.popPrefEnv();
+});
+
 async function assertTimezoneOverridden(browser, timezoneOverride) {
   const timezoneObject = findTimezoneObject(timezoneOverride);
   is(
