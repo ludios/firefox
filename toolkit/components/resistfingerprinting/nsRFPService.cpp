@@ -300,7 +300,6 @@ Maybe<bool> nsRFPService::HandleExceptionalRFPTargets(
     return Some(true);
   }
 
-  // Setting privacy.timezone_override asks for the time zone to be spoofed.
   if (aTarget == RFPTarget::JSDateTimeUTC) {
     const auto timeZone = StaticPrefs::privacy_timezone_override();
     if (!timeZone->IsEmpty()) {
