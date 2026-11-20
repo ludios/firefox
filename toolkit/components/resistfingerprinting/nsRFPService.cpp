@@ -300,6 +300,14 @@ Maybe<bool> nsRFPService::HandleExceptionalRFPTargets(
     return Some(true);
   }
 
+  // Setting privacy.timezone_override asks for the time zone to be spoofed.
+  if (aTarget == RFPTarget::JSDateTimeUTC) {
+    const auto timeZone = StaticPrefs::privacy_timezone_override();
+    if (!timeZone->IsEmpty()) {
+      return Some(true);
+    }
+  }
+
   // We only spoof language if the user has explicitly agreed to the
   // prompt we show when privacy.spoof_english is set to 0.
   if (aTarget == RFPTarget::JSLocale) {
@@ -1067,11 +1075,17 @@ nsCString nsRFPService::GetSpoofedJSLocale() { return "en-US"_ns; }
 
 /* static */
 nsCString nsRFPService::GetSpoofedJSTimeZone() {
+  const auto timeZone = StaticPrefs::privacy_timezone_override();
+  if (!timeZone->IsEmpty() &&
+      intl::TimeZone::TryCreate(Some(MakeStringSpan(timeZone->get()))).isOk()) {
+    return *timeZone;
+  }
   return "Atlantic/Reykjavik"_ns;
 }
 
 /* static */
-PRTimeParameters nsRFPService::LocalTimeParameters(const PRExplodedTime* aGMT) {
+PRTimeParameters nsRFPService::SpoofedTimeParameters(
+    const PRExplodedTime* aGMT) {
   const auto timeZoneName = StaticPrefs::privacy_timezone_override();
   if (!timeZoneName->IsEmpty()) {
     auto timeZone =
@@ -1084,7 +1098,7 @@ PRTimeParameters nsRFPService::LocalTimeParameters(const PRExplodedTime* aGMT) {
       }
     }
   }
-  return PR_LocalTimeParameters(aGMT);
+  return PR_GMTParameters(aGMT);
 }
 
 // ============================================================================

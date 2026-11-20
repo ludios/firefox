@@ -17,7 +17,6 @@
 #include "mozilla/Likely.h"
 #include "mozilla/ScriptPreloader.h"
 #include "mozilla/StaticPrefs_javascript.h"
-#include "mozilla/StaticPrefs_privacy.h"
 
 #include "AccessCheck.h"
 #include "GeckoProfiler.h"
@@ -546,11 +545,6 @@ void InitGlobalObjectOptions(JS::RealmOptions& aOptions,
   } else if (!aTimezoneOverride.IsEmpty()) {
     aOptions.behaviors().setTimeZoneOverride(
         NS_ConvertUTF16toUTF8(aTimezoneOverride).get());
-  } else if (!aIsSystemPrincipal) {
-    const auto timeZone = StaticPrefs::privacy_timezone_override();
-    if (!timeZone->IsEmpty()) {
-      aOptions.behaviors().setTimeZoneOverride(timeZone->get());
-    }
   }
   aOptions.creationOptions().setAlwaysUseFdlibm(aAlwaysUseFdlibm);
   if (aLocaleEnUS) {

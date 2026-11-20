@@ -665,7 +665,7 @@ static nsresult FormatTime(
   }
 
   PRExplodedTime prExplodedTime;
-  PR_ExplodeTime(aPrTime, PR_GMTParameters, &prExplodedTime);
+  PR_ExplodeTime(aPrTime, nsRFPService::SpoofedTimeParameters, &prExplodedTime);
   return mozilla::intl::AppDateTimeFormat::Format(aStyleBag, &prExplodedTime,
                                                   aStringOut);
 }

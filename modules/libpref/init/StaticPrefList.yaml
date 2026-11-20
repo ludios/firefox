@@ -18769,8 +18769,13 @@
   do_not_use_directly: true
 
 # IANA time zone (e.g. "America/Los_Angeles") that web content sees instead of
-# the system time zone; empty to not override. Resist Fingerprinting and
-# WebDriver BiDi's emulation.setTimezoneOverride take precedence.
+# the system time zone; empty to not override. Setting it enables the
+# JSDateTimeUTC fingerprinting protection with this zone instead of
+# Atlantic/Reykjavik, so documents exempt from fingerprinting protection
+# (browser and extension pages, privacy.resistFingerprinting.exemptedDomains)
+# keep the system time zone. It has no effect with
+# privacy.baselineFingerprintingProtection off and no RFP/FPP. Documents and
+# workers already loaded keep their time zone.
 - name: privacy.timezone_override
   type: DataMutexString
   value: ""

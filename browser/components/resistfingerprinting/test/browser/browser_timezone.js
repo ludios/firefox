@@ -244,6 +244,64 @@ add_task(async function test_timezone_exempt_wrong_domain() {
   await SpecialPowers.popPrefEnv();
 });
 
+// Verify that privacy.timezone_override spoofs its time zone without RFP.
+add_task(async function test_timezone_override_pref() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["privacy.timezone_override", "Asia/Kolkata"]],
+  });
+
+  let tab = await BrowserTestUtils.openNewForegroundTab({
+    gBrowser,
+    opening: TEST_PATH + "file_dummy.html",
+    forceNewProcess: true,
+  });
+
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
+    SpecialPowers.Cu.getJSTestingFunctions().setTimeZone("PST8PDT");
+
+    async function test() {
+      const TZ_NAME = "Asia/Kolkata";
+      is(
+        Intl.DateTimeFormat("en-US").resolvedOptions().timeZone,
+        TZ_NAME,
+        `The Intl.DateTimeFormat is in ${TZ_NAME} timezone.`
+      );
+      is(
+        new Date().getTimezoneOffset(),
+        -330,
+        `The Date is in ${TZ_NAME} timezone.`
+      );
+
+      let workerTimeZone = await new Promise((resolve, reject) => {
+        let blob = new Blob([
+          "postMessage(Intl.DateTimeFormat().resolvedOptions().timeZone)",
+        ]);
+        let worker = new Worker(URL.createObjectURL(blob));
+        worker.onmessage = e => resolve(e.data);
+        worker.onerror = reject;
+      });
+      is(workerTimeZone, TZ_NAME, `The worker is in ${TZ_NAME} timezone.`);
+
+      let doc = new DOMParser().parseFromString("<p></p>", "text/html");
+      let lastModified = new Date(
+        doc.lastModified.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$1-$2")
+      );
+      ok(
+        Math.abs(Date.now() - lastModified) < 60 * 1000,
+        `document.lastModified is in ${TZ_NAME} timezone.`
+      );
+    }
+
+    Cu.exportFunction(is, content, { defineAs: "is" });
+    Cu.exportFunction(ok, content, { defineAs: "ok" });
+    await content.eval(`(${test})()`);
+  });
+
+  BrowserTestUtils.removeTab(tab);
+
+  await SpecialPowers.popPrefEnv();
+});
+
 add_task(async function test_timezone_exmpt_browser() {
   SpecialPowers.Cu.getJSTestingFunctions().setTimeZone("PST8PDT");
   is(

@@ -465,9 +465,9 @@ class nsRFPService final : public nsIObserver, public nsIRFPService {
   // should be spoofed by the JavaScript engine.
   static nsCString GetSpoofedJSTimeZone();
 
-  // PR_LocalTimeParameters, but in the privacy.timezone_override time zone
-  // when that is valid.
-  static PRTimeParameters LocalTimeParameters(const PRExplodedTime* aGMT);
+  // PR_ExplodeTime parameters for formatting local time where
+  // RFPTarget::JSDateTimeUTC applies.
+  static PRTimeParameters SpoofedTimeParameters(const PRExplodedTime* aGMT);
 
   // --------------------------------------------------------------------------
 
