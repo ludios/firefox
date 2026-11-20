@@ -2273,7 +2273,7 @@ pref("browser.newtabpage.activity-stream.hideTopSitesWithSearchParam", "mfadid=a
 pref("browser.newtabpage.activity-stream.selfLoading.enabled", true);
 
 // Enables the Nova UI refresh for the new tab page.
-pref("browser.newtabpage.activity-stream.nova.enabled", true, locked);
+pref("browser.newtabpage.activity-stream.nova.enabled", true);
 
 // Set to true to enable debug logging for AboutNewTabResourceMapping.
 pref("browser.newtabpage.resource-mapping.log", false);
