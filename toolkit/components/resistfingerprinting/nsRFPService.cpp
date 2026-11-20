@@ -1086,16 +1086,14 @@ nsCString nsRFPService::GetSpoofedJSTimeZone() {
 /* static */
 PRTimeParameters nsRFPService::SpoofedTimeParameters(
     const PRExplodedTime* aGMT) {
-  const auto timeZoneName = StaticPrefs::privacy_timezone_override();
-  if (!timeZoneName->IsEmpty()) {
-    auto timeZone =
-        intl::TimeZone::TryCreate(Some(MakeStringSpan(timeZoneName->get())));
-    if (timeZone.isOk()) {
-      auto offsetMs = timeZone.inspect()->GetOffsetMs(PR_ImplodeTime(aGMT) /
-                                                      PR_USEC_PER_MSEC);
-      if (offsetMs.isOk()) {
-        return {offsetMs.unwrap() / 1000, 0};
-      }
+  nsCString timeZoneName = GetSpoofedJSTimeZone();
+  auto timeZone =
+      intl::TimeZone::TryCreate(Some(MakeStringSpan(timeZoneName.get())));
+  if (timeZone.isOk()) {
+    auto offsetMs = timeZone.inspect()->GetOffsetMs(PR_ImplodeTime(aGMT) /
+                                                    PR_USEC_PER_MSEC);
+    if (offsetMs.isOk()) {
+      return {offsetMs.unwrap() / 1000, 0};
     }
   }
   return PR_GMTParameters(aGMT);
