@@ -5,6 +5,7 @@
 @import "chrome://global/skin/global.css";
 
 .disconnected,
+.vpn-unavailable,
 .paused,
 .connecting {
   background-color: var(--background-color-box-info);
