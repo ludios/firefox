@@ -587,7 +587,7 @@ nsresult txEXSLTFunctionCall::evaluate(txIEvalContext* aContext,
       PRTimeParamFn timezone =
           sourceDoc->ShouldResistFingerprinting(RFPTarget::JSDateTimeUTC)
               ? PR_GMTParameters
-              : PR_LocalTimeParameters;
+              : nsRFPService::LocalTimeParameters;
 
       PRTime time =
           sourceDoc->ShouldResistFingerprinting(RFPTarget::ReduceTimerPrecision)

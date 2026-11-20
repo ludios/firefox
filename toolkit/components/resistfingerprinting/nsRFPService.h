@@ -22,6 +22,7 @@
 #include "nsISupports.h"
 #include "nsIRFPService.h"
 #include "nsStringFwd.h"
+#include "prtime.h"
 
 // Defines regarding spoofed values of Navigator object. These spoofed values
 // are returned when 'privacy.resistFingerprinting' is true.
@@ -463,6 +464,10 @@ class nsRFPService final : public nsIObserver, public nsIRFPService {
   // This method generates the time zone string (e.g. "Atlantic/Reykjavik") that
   // should be spoofed by the JavaScript engine.
   static nsCString GetSpoofedJSTimeZone();
+
+  // PR_LocalTimeParameters, but in the privacy.timezone_override time zone
+  // when that is valid.
+  static PRTimeParameters LocalTimeParameters(const PRExplodedTime* aGMT);
 
   // --------------------------------------------------------------------------
 

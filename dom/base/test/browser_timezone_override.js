@@ -198,6 +198,17 @@ add_task(async function test_timezone_override_pref() {
     timezoneOverride,
     "Intl time zone in a worker is overridden"
   );
+  Assert.less(
+    Math.abs(
+      await SpecialPowers.spawn(overriddenBrowser, [], () => {
+        return content.eval(
+          `new Date(document.implementation.createHTMLDocument().lastModified) - Date.now()`
+        );
+      })
+    ),
+    60 * 1000,
+    "document.lastModified is in the overridden time zone"
+  );
 
   BrowserTestUtils.removeTab(overriddenTab);
   await SpecialPowers.popPrefEnv();

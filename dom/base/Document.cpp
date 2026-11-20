@@ -4669,8 +4669,9 @@ void Document::SetDocumentURI(nsIURI* aURI) {
 static void GetFormattedTimeString(PRTime aTime, bool aUniversal,
                                    nsAString& aFormattedTimeString) {
   PRExplodedTime prtime;
-  PR_ExplodeTime(aTime, aUniversal ? PR_GMTParameters : PR_LocalTimeParameters,
-                 &prtime);
+  PR_ExplodeTime(
+      aTime, aUniversal ? PR_GMTParameters : nsRFPService::LocalTimeParameters,
+      &prtime);
   // "MM/DD/YYYY hh:mm:ss"
   char formatedTime[24];
   if (SprintfLiteral(formatedTime, "%02d/%02d/%04d %02d:%02d:%02d",

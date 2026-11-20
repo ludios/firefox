@@ -54,6 +54,7 @@
 #include "mozilla/dom/quota/QuotaManager.h"
 #include "mozilla/gfx/2D.h"
 #include "mozilla/intl/LocaleService.h"
+#include "mozilla/intl/TimeZone.h"
 #include "mozilla/XorShift128PlusRNG.h"
 
 #include "nsAboutProtocolUtils.h"
@@ -1067,6 +1068,23 @@ nsCString nsRFPService::GetSpoofedJSLocale() { return "en-US"_ns; }
 /* static */
 nsCString nsRFPService::GetSpoofedJSTimeZone() {
   return "Atlantic/Reykjavik"_ns;
+}
+
+/* static */
+PRTimeParameters nsRFPService::LocalTimeParameters(const PRExplodedTime* aGMT) {
+  const auto timeZoneName = StaticPrefs::privacy_timezone_override();
+  if (!timeZoneName->IsEmpty()) {
+    auto timeZone =
+        intl::TimeZone::TryCreate(Some(MakeStringSpan(timeZoneName->get())));
+    if (timeZone.isOk()) {
+      auto offsetMs = timeZone.inspect()->GetOffsetMs(PR_ImplodeTime(aGMT) /
+                                                      PR_USEC_PER_MSEC);
+      if (offsetMs.isOk()) {
+        return {offsetMs.unwrap() / 1000, 0};
+      }
+    }
+  }
+  return PR_LocalTimeParameters(aGMT);
 }
 
 // ============================================================================
