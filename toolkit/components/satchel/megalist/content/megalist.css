@@ -32,8 +32,10 @@ password-card,
   margin-block: var(--space-small);
 }
 
-.empty-state-card {
-  --card-padding: var(--space-medium);
+@media -moz-pref("browser.nova.enabled") {
+  .empty-state-card {
+    --card-padding: var(--space-medium);
+  }
 }
 
 .passwords-list {
