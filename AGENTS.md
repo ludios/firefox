@@ -159,6 +159,10 @@ You can find the review identifier by inspecting the commit log with:
 - When doing Android and Desktop front-end-only changes, use the special `./mach build faster` to skip all C++/Rust compilation.
 - Conversely, for C/C++/Obj-C/Rust only changes you can use the special `./mach build binaries` to skip all front-end-related tasks.
 
+# pdf.js
+
+`toolkit/components/pdfjs/` is built from the pdf.js fork in `~/code/firefox/pdf.js` (branch `prime`), not from the upstream revision that its `moz.yaml` names; that checkout's AGENTS.md says how, under "Vendoring into Firefox". When a rebase onto `origin/main` brings a pdf.js update, don't keep either side of the conflicts in the generated files: rebase the fork's `prime` onto the new revision and vendor it again.
+
 # Using git safely
 
 **Other sessions may be staging and committing** here, including the files you are changing, and their edits can land between your last check and your commit. So, never use `git add FILE`, `git commit -a`, or `git commit -- FILES`. Instead, in the repository's top directory (elsewhere, a patch can silently miss files):
