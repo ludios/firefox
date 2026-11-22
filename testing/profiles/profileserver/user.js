@@ -10,6 +10,10 @@ user_pref("dom.timeout.enable_budget_timer_throttling", false);
 user_pref("app.update.disabledForTesting", true);
 // Don't break the add-ons in build/pgo/addons when they use deprecated APIs
 user_pref("extensions.webextensions.warnings-as-errors", false);
+// With the MOZ_DISABLE_NONLOCAL_CONNECTIONS that profileserver.py sets, the
+// true from common/user.js would turn on automation mode, whose test-only code
+// paths (and crashes, e.g. on a missing chrome:// URL) real use never takes.
+user_pref("security.turn_off_all_security_so_that_viruses_can_take_over_this_computer", false);
 
 // Train with the prefs of the profile that this build is used with, so that
 // the code paths those prefs pick get the profile data.
