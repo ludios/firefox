@@ -34,4 +34,6 @@ user_pref("network.dns.disablePrefetch", true);
 user_pref("network.prefetch-next", false);
 user_pref("privacy.timezone_override", "America/Los_Angeles");
 user_pref("security.enterprise_roots.enabled", false);
+// Load build/pgo/userContent.css, which profileserver.py puts in the profile.
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 user_pref("ui.prefersReducedMotion", 1);

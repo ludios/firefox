@@ -1337,6 +1337,7 @@ toolkit/components/pdfjs/content/web/debugger.css
 toolkit/components/pdfjs/content/web/viewer.css
 toolkit/components/pdfjs/content/web/viewer-geckoview.css
 build/pgo/blueprint/**/*.css
+build/pgo/userContent.css
 
 # Ignore web-platform tests as they are not necessarily under our control.
 testing/web-platform/tests/

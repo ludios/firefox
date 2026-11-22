@@ -1,0 +1,81 @@
+@-moz-document url-prefix("chrome://devtools/content/"), url-prefix("about:devtools-toolbox") {
+    .devtools-monospace {
+        /* In the devtools, use the default monospace font we configured, not Consolas */
+        font-family: monospace !important;
+        font-size: 9pt !important;
+    }
+
+    :root {
+        /* Make things slightly larger than the default 11px */
+        --theme-body-font-size: 9pt !important;
+        --theme-code-font-size: 9pt !important;
+    }
+
+    :root[platform="win"] {
+        /* In the Console tab, use the default monospace font we configured, not Consolas */
+        --monospace-font-family: monospace !important;
+    }
+}
+
+/* Use one monospace font */
+
+@font-face { src: local("PragmataProMono-Regular"), local("PragmataProMono"); font-family: "Consolas";                                                      }
+@font-face { src: local("PragmataProMono-Bold");                              font-family: "Consolas";               font-weight: bold;                     }
+@font-face { src: local("PragmataProMono-Italic");                            font-family: "Consolas";                                  font-style: italic; }
+@font-face { src: local("PragmataProMono-BoldItalic");                        font-family: "Consolas";               font-weight: bold; font-style: italic; }
+@font-face { src: local("PragmataProMono-Regular"), local("PragmataProMono"); font-family: "Courier";                                                       }
+@font-face { src: local("PragmataProMono-Bold");                              font-family: "Courier";                font-weight: bold;                     }
+@font-face { src: local("PragmataProMono-Italic");                            font-family: "Courier";                                   font-style: italic; }
+@font-face { src: local("PragmataProMono-BoldItalic");                        font-family: "Courier";                font-weight: bold; font-style: italic; }
+@font-face { src: local("PragmataProMono-Regular"), local("PragmataProMono"); font-family: "Courier New";                                                   }
+@font-face { src: local("PragmataProMono-Bold");                              font-family: "Courier New";            font-weight: bold;                     }
+@font-face { src: local("PragmataProMono-Italic");                            font-family: "Courier New";                               font-style: italic; }
+@font-face { src: local("PragmataProMono-BoldItalic");                        font-family: "Courier New";            font-weight: bold; font-style: italic; }
+@font-face { src: local("PragmataProMono-Regular"), local("PragmataProMono"); font-family: "Segoe UI Mono";                                                 }
+@font-face { src: local("PragmataProMono-Bold");                              font-family: "Segoe UI Mono";          font-weight: bold;                     }
+@font-face { src: local("PragmataProMono-Italic");                            font-family: "Segoe UI Mono";                             font-style: italic; }
+@font-face { src: local("PragmataProMono-BoldItalic");                        font-family: "Segoe UI Mono";          font-weight: bold; font-style: italic; }
+@font-face { src: local("PragmataProMono-Regular"), local("PragmataProMono"); font-family: "Cascadia Mono";                                                 }
+@font-face { src: local("PragmataProMono-Bold");                              font-family: "Cascadia Mono";          font-weight: bold;                     }
+@font-face { src: local("PragmataProMono-Italic");                            font-family: "Cascadia Mono";                             font-style: italic; }
+@font-face { src: local("PragmataProMono-BoldItalic");                        font-family: "Cascadia Mono";          font-weight: bold; font-style: italic; }
+@font-face { src: local("PragmataProMono-Regular"), local("PragmataProMono"); font-family: "Lucida Sans Typewriter";                                        }
+@font-face { src: local("PragmataProMono-Bold");                              font-family: "Lucida Sans Typewriter"; font-weight: bold;                     }
+@font-face { src: local("PragmataProMono-Italic");                            font-family: "Lucida Sans Typewriter";                    font-style: italic; }
+@font-face { src: local("PragmataProMono-BoldItalic");                        font-family: "Lucida Sans Typewriter"; font-weight: bold; font-style: italic; }
+
+/* Inter Display has too many weights to alias, so the rules below hide the
+   installed families instead: local("-") never loads, so text falls through to
+   the next family the page lists, usually a generic one, which the font.name.*
+   prefs set to Inter Display. */
+
+/* Use one sans-serif font */
+
+@font-face { src: local("-"); font-family: "system-ui";          }
+@font-face { src: local("-"); font-family: "-apple-system";      }
+@font-face { src: local("-"); font-family: "BlinkMacSystemFont"; }
+@font-face { src: local("-"); font-family: "Arial";              }
+@font-face { src: local("-"); font-family: "Helvetica";          }
+@font-face { src: local("-"); font-family: "Segoe UI";           }
+@font-face { src: local("-"); font-family: "Segoe UI Adjusted";  }
+@font-face { src: local("-"); font-family: "Verdana";            }
+@font-face { src: local("-"); font-family: "Tahoma";             }
+@font-face { src: local("-"); font-family: "Trebuchet MS";       }
+@font-face { src: local("-"); font-family: "Lucida Sans";        }
+@font-face { src: local("-"); font-family: "Calibri";            }
+@font-face { src: local("-"); font-family: "Gill Sans";          }
+@font-face { src: local("-"); font-family: "Gill Sans MT";       }
+@font-face { src: local("-"); font-family: "Inter";              }
+@font-face { src: local("-"); font-family: "Noto Sans";          }
+
+/* Replace serif with our one sans-serif font (serif on screens reads worse) */
+
+@font-face { src: local("-"); font-family: "Georgia";            }
+@font-face { src: local("-"); font-family: "Times";              }
+@font-face { src: local("-"); font-family: "Times New Roman";    }
+@font-face { src: local("-"); font-family: "Palatino Linotype";  }
+@font-face { src: local("-"); font-family: "Garamond";           }
+@font-face { src: local("-"); font-family: "Bookman";            }
+@font-face { src: local("-"); font-family: "PT Serif";           }
+@font-face { src: local("-"); font-family: "Book Antiqua";       }
+@font-face { src: local("-"); font-family: "Cambria";            }

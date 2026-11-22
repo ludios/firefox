@@ -21,6 +21,8 @@ license:
         - build/pgo/blueprint/print.css
         # Different license
         - build/pgo/blueprint/screen.css
+        # The userContent.css that prime is used with
+        - build/pgo/userContent.css
         # Empty files
         - config/external/nspr/_pl_bld.h
         - config/external/nspr/_pr_bld.h

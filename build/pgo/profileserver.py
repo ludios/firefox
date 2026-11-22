@@ -378,6 +378,13 @@ if __name__ == "__main__":
             locations=locations,
         )
 
+        chrome_dir = os.path.join(profilePath, "chrome")
+        os.makedirs(chrome_dir, exist_ok=True)
+        shutil.copy(
+            os.path.join(build.topsrcdir, "build", "pgo", "userContent.css"),
+            chrome_dir,
+        )
+
         env = os.environ.copy()
         env["MOZ_CRASHREPORTER_NO_REPORT"] = "1"
         env["MOZ_CRASHREPORTER_SHUTDOWN"] = "1"
