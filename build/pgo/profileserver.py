@@ -224,10 +224,6 @@ def get_crashreports(directory, name=None):
             dump_save_path=upload_path,
             test_name=name,
         )
-    else:
-        rc = mozcrash.check_for_crashes(
-            os.path.join(directory, "minidumps"), test_name=name
-        )
     return rc
 
 
