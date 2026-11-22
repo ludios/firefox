@@ -8,6 +8,8 @@
 user_pref("dom.timeout.enable_budget_timer_throttling", false);
 // Turn off update
 user_pref("app.update.disabledForTesting", true);
+// Don't break the add-ons in build/pgo/addons when they use deprecated APIs
+user_pref("extensions.webextensions.warnings-as-errors", false);
 
 // Train with the prefs of the profile that this build is used with, so that
 // the code paths those prefs pick get the profile data.

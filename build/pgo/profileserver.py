@@ -374,7 +374,12 @@ if __name__ == "__main__":
                 os.path.join(
                     build.topsrcdir, "tools", "quitter", "quitter@mozilla.org.xpi"
                 )
-            ],
+            ]
+            + sorted(
+                glob.glob(
+                    os.path.join(build.topsrcdir, "build", "pgo", "addons", "*.xpi")
+                )
+            ),
             locations=locations,
         )
 
