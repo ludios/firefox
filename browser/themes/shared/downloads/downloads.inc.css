@@ -49,6 +49,8 @@
   padding-inline-end: var(--space-xsmall);
   margin: 0 0 var(--space-small);
   border-radius: var(--border-radius-medium);
+  background: transparent;
+  color: inherit;
   @media not -moz-pref("browser.nova.enabled") {
     border-radius: var(--border-radius-small);
   }
@@ -96,6 +98,8 @@
 
 .downloadTypeIcon {
   margin-inline-end: 0.7em;
+  width: var(--size-item-large);
+  height: var(--size-item-large);
 }
 
 #downloadsSummary {
@@ -106,6 +110,7 @@
   /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
   padding-inline-end: 59px;
   -moz-user-focus: normal;
+  min-height: var(--downloads-item-height);
 }
 
 #downloadsSummary > .downloadTypeIcon {
@@ -117,22 +122,8 @@
 }
 
 /*** List items and similar elements in the summary ***/
-#downloadsSummary {
-  min-height: var(--downloads-item-height);
-}
-
-#downloadsListBox > richlistitem {
-  background: transparent;
-  color: inherit;
-}
-
 #downloadsListBox > richlistitem:last-child {
   margin-bottom: 0;
-}
-
-.downloadTypeIcon {
-  width: var(--size-item-large);
-  height: var(--size-item-large);
 }
 
 #downloadsSummaryDescription,
