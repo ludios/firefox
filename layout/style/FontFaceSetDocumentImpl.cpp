@@ -179,6 +179,11 @@ void FontFaceSetDocumentImpl::FindMatchingFontFaces(
     nsTArray<FontFace*>& aFontFaces) {
   FontFaceSetImpl::FindMatchingFontFaces(aMatchingFaces, aFontFaces);
   for (FontFaceRecord& record : mRuleFaces) {
+    // Like FontFaceSet::Size and GetFontFaceAt, leave out faces from user and
+    // UA sheets, which aren't part of the document's FontFaceSet.
+    if (record.mOrigin != Some(StyleOrigin::Author)) {
+      continue;
+    }
     FontFace* owner = record.mFontFace->GetOwner();
     if (owner && aMatchingFaces.Contains(owner)) {
       aFontFaces.AppendElement(owner);
