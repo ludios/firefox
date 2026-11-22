@@ -10,6 +10,9 @@ user_pref("dom.timeout.enable_budget_timer_throttling", false);
 user_pref("app.update.disabledForTesting", true);
 // Don't break the add-ons in build/pgo/addons when they use deprecated APIs
 user_pref("extensions.webextensions.warnings-as-errors", false);
+// Refuse Dark Reader's install-time help page and news feed by resolving their
+// host to localhost, where nothing serves HTTPS
+user_pref("network.dns.localDomains", "darkreader.org");
 // Don't use the build machine's system proxy settings or PAC file
 user_pref("network.proxy.type", 0);
 
