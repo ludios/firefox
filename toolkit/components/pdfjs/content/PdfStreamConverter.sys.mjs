@@ -18,7 +18,6 @@ const PDF_VIEWER_ORIGIN = "resource://pdf.js";
 const PDF_VIEWER_WEB_PAGE = "resource://pdf.js/web/viewer.html";
 const PDF_VIEWER_WORKER_URL = "resource://pdf.js/build/pdf.worker.mjs";
 const PDF_VIEWER_RENDERER_URL = "resource://pdf.js/build/pdf.renderer.mjs";
-const MAX_NUMBER_OF_PREFS = 60;
 // Recommended page-size limit in ISO 32000-1, Annex C.
 const MAX_PRINT_TO_PDF_PAGE_SIZE_IN_PT = 14400;
 const MAX_PRINT_TO_PDF_FONT_SIZE_IN_PT = 1000;
@@ -850,16 +849,9 @@ class ChromeActions {
     const browserPrefs = await this.getBrowserPrefs();
 
     var defaultBranch = Services.prefs.getDefaultBranch("pdfjs.");
-    var currentPrefs = {},
-      numberOfPrefs = 0;
+    var currentPrefs = {};
     for (var key in prefs) {
-      if (++numberOfPrefs > MAX_NUMBER_OF_PREFS) {
-        log(
-          "getPreferences - Exceeded the maximum number of preferences " +
-            "that is allowed to be fetched at once."
-        );
-        break;
-      } else if (!defaultBranch.getPrefType(key)) {
+      if (!defaultBranch.getPrefType(key)) {
         continue;
       }
       const prefName = `pdfjs.${key}`,
