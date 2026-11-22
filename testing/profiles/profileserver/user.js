@@ -14,6 +14,8 @@ user_pref("extensions.webextensions.warnings-as-errors", false);
 // true from common/user.js would turn on automation mode, whose test-only code
 // paths (and crashes, e.g. on a missing chrome:// URL) real use never takes.
 user_pref("security.turn_off_all_security_so_that_viruses_can_take_over_this_computer", false);
+// Don't use the build machine's system proxy settings or PAC file
+user_pref("network.proxy.type", 0);
 
 // Train with the prefs of the profile that this build is used with, so that
 // the code paths those prefs pick get the profile data.
