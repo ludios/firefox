@@ -1,7 +1,5 @@
 profileserver.py installs every XPI in this directory for PGO training.
 They are the files signed by addons.mozilla.org, unmodified.
-When updating one, check that the hosts it fetches from on its own are still
-all in network.dns.localDomains in testing/profiles/profileserver/user.js.
 
 ublock_origin-1.76.6.xpi: uBlock Origin, GPL-3.0 (LICENSE.txt inside the XPI)
 Source: https://github.com/gorhill/uBlock/tree/1.76.6

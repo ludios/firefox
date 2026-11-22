@@ -10,10 +10,11 @@ user_pref("dom.timeout.enable_budget_timer_throttling", false);
 user_pref("app.update.disabledForTesting", true);
 // Don't break the add-ons in build/pgo/addons when they use deprecated APIs
 user_pref("extensions.webextensions.warnings-as-errors", false);
-// Refuse the add-ons' requests by resolving their hosts to localhost, where
-// nothing serves them: Dark Reader's install-time help page and news feed, and
-// uBlock Origin's filter list updates (the hosts in its assets/assets.json)
-user_pref("network.dns.localDomains", "darkreader.org,cdn.jsdelivr.net,cdn.statically.io,curbengh.github.io,easylist-downloads.adblockplus.org,easylist.to,filters.adtidy.org,hole.cert.pl,malware-filter.gitlab.io,pgl.yoyo.org,phishing-filter.pages.dev,publicsuffix.org,raw.githubusercontent.com,secure.fanboy.co.nz,someonewhocares.org,stanev.org,ublockorigin.github.io,ublockorigin.pages.dev,ubo-et.lepik.io,www.void.gr");
+// Resolve every host but localhost to 127.0.0.1, where nothing should serve
+// HTTP(S), so that non-local requests such as the add-ons' (Dark Reader's help
+// page and news feed, uBlock Origin's filter list updates) fail without
+// touching the network
+user_pref("network.dns.forceResolve", "127.0.0.1");
 // Don't use the build machine's system proxy settings or PAC file
 user_pref("network.proxy.type", 0);
 
