@@ -394,6 +394,8 @@ if __name__ == "__main__":
         env["MOZ_CRASHREPORTER_NO_REPORT"] = "1"
         env["MOZ_CRASHREPORTER_SHUTDOWN"] = "1"
         env["XPCOM_DEBUG_BREAK"] = "warn"
+        # Keep the add-ons' list updates and feeds out of the training workload
+        env["MOZ_DISABLE_NONLOCAL_CONNECTIONS"] = "1"
 
         # Ensure different pids write to different files
         # Use absolute path to ensure that Sandbox computes the correct permissions
