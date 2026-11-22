@@ -280,9 +280,6 @@
     }
   }
 
-  /* TODO: Bug 2056428 - Post-Nova this should be removed along with the defunct styles
-   * for icons in the blocked subview.
-   */
   .downloadsPanel-blockedSubview-image {
     display: none;
   }
