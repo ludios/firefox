@@ -22,6 +22,7 @@ user_pref("network.proxy.type", 0);
 // the code paths those prefs pick get the profile data.
 user_pref("accessibility.force_disabled", 1);
 user_pref("apz.record_checkerboarding", false);
+user_pref("browser.newtabpage.enabled", false);
 user_pref("browser.nova.enabled", false);
 user_pref("browser.safebrowsing.malware.enabled", false);
 user_pref("browser.safebrowsing.phishing.enabled", false);
