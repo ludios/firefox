@@ -25,6 +25,7 @@ user_pref("apz.record_checkerboarding", false);
 user_pref("browser.nova.enabled", false);
 user_pref("browser.safebrowsing.malware.enabled", false);
 user_pref("browser.safebrowsing.phishing.enabled", false);
+user_pref("browser.uidensity", 1);
 user_pref("font.default.x-unicode", "sans-serif");
 user_pref("font.default.x-western", "sans-serif");
 user_pref("font.name.monospace.ja", "UD Digi Kyokasho N-R");
