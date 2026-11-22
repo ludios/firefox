@@ -19524,6 +19524,13 @@ void Document::FlushUserFontSet() {
     if (presShell) {
       MOZ_ASSERT(mStyleSetFilled);
       EnsureStyleSet().AppendFontFaceRules(rules);
+      // Keep user-origin @font-face rules, such as userContent.css's, out of
+      // the pdf.js viewer, so that PDFs get the fonts they ask for.
+      if (nsContentUtils::IsPDFJS(NodePrincipal())) {
+        rules.RemoveElementsBy([](const nsFontFaceRuleContainer& aRule) {
+          return aRule.mOrigin == StyleOrigin::User;
+        });
+      }
     }
 
     if (!mFontFaceSet && !rules.IsEmpty()) {
