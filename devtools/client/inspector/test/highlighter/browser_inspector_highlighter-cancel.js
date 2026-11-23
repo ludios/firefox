@@ -16,27 +16,23 @@ const TESTS = [
     // Escape would open the split console if the toolbox was focused
     focusToolbox: false,
   },
-  {
-    key: "C",
-    options: {
-      metaKey: isMac,
-      ctrlKey: !isMac,
-      shiftKey: true,
-    },
-    // Test with the toolbox focused to check the client side event listener.
-    focusToolbox: true,
-  },
-  {
-    key: "C",
-    options: {
-      metaKey: isMac,
-      ctrlKey: !isMac,
-      shiftKey: true,
-    },
-    // Test with the content page focused to check the actor's event listener.
-    focusToolbox: false,
-  },
 ];
+if (isMac) {
+  TESTS.push(
+    {
+      key: "C",
+      options: { metaKey: true, shiftKey: true },
+      // Test with the toolbox focused to check the client side event listener.
+      focusToolbox: true,
+    },
+    {
+      key: "C",
+      options: { metaKey: true, shiftKey: true },
+      // Test with the content page focused to check the actor's event listener.
+      focusToolbox: false,
+    }
+  );
+}
 
 for (const { key, options, focusToolbox } of TESTS) {
   add_task(async function () {

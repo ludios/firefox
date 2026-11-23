@@ -51,9 +51,9 @@ These shortcuts work in the main browser window to open the specified tool. The 
     - :kbd:`Ctrl` + :kbd:`Shift` + :kbd:`K`
 
   * - Toggle "Pick an element from the page" (opens the Toolbox and/or focus the Inspector tab)
-    - :kbd:`Ctrl` + :kbd:`Shift` + :kbd:`C`
+    - None by default; assign one in ``about:keyboard``
     - :kbd:`Cmd` + :kbd:`Opt` + :kbd:`C`
-    - :kbd:`Ctrl` + :kbd:`Shift` + :kbd:`C`
+    - None by default; assign one in ``about:keyboard``
 
   * - Open Style Editor
     - :kbd:`Shift` + :kbd:`F7`
@@ -277,9 +277,9 @@ Keyboard shortcuts for the {doc}`Page inspector <../page_inspector/index>`.
     - **Linux**
 
   * - Inspect Element
-    - :kbd:`Ctrl` + :kbd:`Shift` + :kbd:`C`
+    - None by default; assign one in ``about:keyboard``
     - :kbd:`Cmd` + :kbd:`Shift` + :kbd:`C`
-    - :kbd:`Ctrl` + :kbd:`Shift` + :kbd:`C`
+    - None by default; assign one in ``about:keyboard``
 
 ```
 

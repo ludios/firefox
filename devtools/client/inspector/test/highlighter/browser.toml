@@ -158,6 +158,9 @@ support-files = [
 ["browser_inspector_highlighter-keybinding_04.js"]
 
 ["browser_inspector_highlighter-keybinding_separate-window.js"]
+run-if = [
+  "os == 'mac'", # The inspector has no default keyboard shortcut elsewhere
+]
 
 ["browser_inspector_highlighter-measure-keybinding.js"]
 

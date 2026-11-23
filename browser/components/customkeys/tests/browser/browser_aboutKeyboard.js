@@ -76,8 +76,17 @@ addAboutKbTask(async function testInit(tab) {
       0,
       "No shortcuts are customized"
     );
-    const unassigned = content.document.querySelectorAll(".key:not(.assigned)");
-    is(unassigned.length, 5, "Five keys are unassigned");
+    is(
+      content.document
+        .querySelector('.key[data-id="key_inspector"]')
+        .classList.contains("assigned"),
+      Services.appinfo.OS == "Darwin",
+      "key_inspector is assigned on macOS only"
+    );
+    const unassigned = content.document.querySelectorAll(
+      '.key:not(.assigned, [data-id="key_inspector"])'
+    );
+    is(unassigned.length, 5, "Five other keys are unassigned");
     is(
       unassigned[0].dataset.id,
       "key_duplicateTab",

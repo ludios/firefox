@@ -8,23 +8,16 @@
 
 const { Toolbox } = require("resource://devtools/client/framework/toolbox.js");
 
-const IS_OSX = Services.appinfo.OS === "Darwin";
 const TEST_URL = "data:text/html;charset=utf8,<div></div>";
 
 const TEST_MODIFIERS = [
   {
-    isOSX: true,
-    description: "OSX and altKey+metaKey",
+    description: "altKey+metaKey",
     modifier: { altKey: true, metaKey: true },
   },
   {
-    isOSX: true,
-    description: "OSX and metaKey+shiftKey",
+    description: "metaKey+shiftKey",
     modifier: { metaKey: true, shiftKey: true },
-  },
-  {
-    description: "ctrlKey+shiftKey",
-    modifier: { ctrlKey: true, shiftKey: true },
   },
 ];
 
@@ -35,11 +28,7 @@ add_task(async () => {
   info("Open an inspected tab");
   await addTab(TEST_URL);
 
-  for (const { description, modifier, isOSX } of TEST_MODIFIERS) {
-    if (!!isOSX !== IS_OSX) {
-      continue;
-    }
-
+  for (const { description, modifier } of TEST_MODIFIERS) {
     info(`Start the test for ${description}`);
 
     info("Open the toolbox and the inspecor");
