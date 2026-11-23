@@ -1028,7 +1028,8 @@ class AccessibleWalkerActor extends Actor {
     /**
      * KEY: Action/scope
      * ENTER/CARRIAGE_RETURN: Picks current accessible
-     * ESC/CTRL+SHIFT+C: Cancels picker
+     * ESC: Cancels picker
+     * CMD+OPT+C on macOS: Same as ESC
      */
     switch (event.keyCode) {
       // Select the element.
@@ -1041,10 +1042,7 @@ class AccessibleWalkerActor extends Actor {
         this.emit("picker-accessible-canceled");
         break;
       case event.DOM_VK_C:
-        if (
-          (IS_OSX && event.metaKey && event.altKey) ||
-          (!IS_OSX && event.ctrlKey && event.shiftKey)
-        ) {
+        if (IS_OSX && event.metaKey && event.altKey) {
           this.cancelPick();
           this.emit("picker-accessible-canceled");
         }
