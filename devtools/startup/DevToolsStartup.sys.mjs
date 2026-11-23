@@ -139,13 +139,13 @@ ChromeUtils.defineLazyGetter(lazy, "KeyShortcuts", function () {
     // Key for opening the Inspector. Only macOS has a default shortcut. The
     // empty one elsewhere still creates the <key>, so that about:keyboard can
     // assign it.
-    isMac
-      ? {
-          toolId: "inspector",
-          shortcut: getLocalizedKeyShortcut("devtools-commandkey-inspector"),
-          modifiers,
-        }
-      : { toolId: "inspector", shortcut: "" },
+    {
+      toolId: "inspector",
+      shortcut: isMac
+        ? getLocalizedKeyShortcut("devtools-commandkey-inspector")
+        : "",
+      modifiers: isMac ? modifiers : "",
+    },
     // Key for opening the Web Console
     {
       toolId: "webconsole",
