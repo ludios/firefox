@@ -271,7 +271,8 @@ class NodePicker {
 
     // Handle keys which don't require a currently picked node:
     // - ENTER/CARRIAGE_RETURN: Picks currentNode
-    // - ESC/CTRL+SHIFT+C: Cancels picker, picks currentNode
+    // - ESC: Cancels picker, picks currentNode
+    // - CMD+SHIFT+C/CMD+OPT+C on macOS: Same as ESC
     // - SHIFT: Trigger onHover, handling `pointer-events: none` nodes
     switch (event.keyCode) {
       // Select the element.
@@ -285,12 +286,9 @@ class NodePicker {
         this._walker.emit("picker-node-canceled");
         return;
       case event.DOM_VK_C: {
-        const { altKey, ctrlKey, metaKey, shiftKey } = event;
+        const { altKey, metaKey, shiftKey } = event;
 
-        if (
-          (IS_OSX && metaKey && altKey | shiftKey) ||
-          (!IS_OSX && ctrlKey && shiftKey)
-        ) {
+        if (IS_OSX && metaKey && altKey | shiftKey) {
           this.cancelPick();
           this._walker.emit("picker-node-canceled");
         }

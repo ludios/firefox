@@ -186,15 +186,14 @@ Tools.inspector = {
   label: l10n("inspector.label"),
   panelLabel: l10n("inspector.panelLabel"),
   get tooltip() {
-    const key = commandkey("devtools-commandkey-inspector");
     if (osString == "Darwin") {
+      const key = commandkey("devtools-commandkey-inspector");
       const cmdShiftC = "Cmd+Shift+" + key;
       const cmdOptC = "Cmd+Opt+" + key;
       return l10n("inspector.mac.tooltip", cmdShiftC, cmdOptC);
     }
 
-    const ctrlShiftC = "Ctrl+Shift+" + key;
-    return l10n("inspector.tooltip2", ctrlShiftC);
+    return l10n("inspector.tooltip3");
   },
   inMenu: false,
 

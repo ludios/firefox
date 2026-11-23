@@ -136,12 +136,16 @@ ChromeUtils.defineLazyGetter(lazy, "KeyShortcuts", function () {
     // The following keys are also registered in /client/definitions.js
     // and should be synced.
 
-    // Key for opening the Inspector
-    {
-      toolId: "inspector",
-      shortcut: getLocalizedKeyShortcut("devtools-commandkey-inspector"),
-      modifiers,
-    },
+    // Key for opening the Inspector. Only macOS has a default shortcut. The
+    // empty one elsewhere still creates the <key>, so that about:keyboard can
+    // assign it.
+    isMac
+      ? {
+          toolId: "inspector",
+          shortcut: getLocalizedKeyShortcut("devtools-commandkey-inspector"),
+          modifiers,
+        }
+      : { toolId: "inspector", shortcut: "" },
     // Key for opening the Web Console
     {
       toolId: "webconsole",
@@ -1000,7 +1004,7 @@ export class DevToolsStartup {
   attachKeys(doc, keyShortcuts, keyset = doc.getElementById("devtoolsKeyset")) {
     const window = doc.defaultView;
     for (const key of keyShortcuts) {
-      if (!key.shortcut) {
+      if (key.shortcut == null) {
         // Shortcuts might be missing when a user relies on a language packs
         // which is missing a recently uplifted shortcut. Language packs are
         // typically updated a few days after a code uplift.
@@ -1117,7 +1121,7 @@ export class DevToolsStartup {
         // such as ctrl shift 1.
         k.setAttribute("event", "keydown");
       }
-    } else {
+    } else if (shortcut) {
       k.setAttribute("key", shortcut);
     }
 

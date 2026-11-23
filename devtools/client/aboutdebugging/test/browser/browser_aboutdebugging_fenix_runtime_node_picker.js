@@ -60,12 +60,10 @@ add_task(async function () {
   );
   const pickerButtonTitle = pickerButton.getAttribute("title");
   const expectedKeyboardShortcut =
-    Services.appinfo.OS === "Darwin"
-      ? `Cmd+Shift+C or Cmd+Opt+C`
-      : `Ctrl+Shift+C`;
+    Services.appinfo.OS === "Darwin" ? ` (Cmd+Shift+C or Cmd+Opt+C)` : ``;
   is(
     pickerButtonTitle,
-    `Pick an element from the Android phone (${expectedKeyboardShortcut})`,
+    `Pick an element from the Android phone${expectedKeyboardShortcut}`,
     `The node picker does have the expected tooltip when debugging an android phone`
   );
 

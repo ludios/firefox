@@ -33,23 +33,17 @@ add_task(async function () {
     "The #another DIV is still selected. Passed."
   );
 
-  info("Testing Ctrl+Shift+C shortcut as cancel-picker command");
-  await startPicker(toolbox);
-  await hoverElement(inspector, "#ahoy");
-  const eventOptions = { key: "VK_C" };
   if (IS_OSX) {
-    eventOptions.metaKey = true;
-    eventOptions.altKey = true;
-  } else {
-    eventOptions.ctrlKey = true;
-    eventOptions.shiftKey = true;
+    info("Testing Cmd+Opt+C shortcut as cancel-picker command");
+    await startPicker(toolbox);
+    await hoverElement(inspector, "#ahoy");
+    await doKeyStop("VK_C", { key: "VK_C", metaKey: true, altKey: true });
+    is(
+      inspector.selection.nodeFront.id,
+      "another",
+      "The #another DIV is still selected. Passed."
+    );
   }
-  await doKeyStop("VK_C", eventOptions);
-  is(
-    inspector.selection.nodeFront.id,
-    "another",
-    "The #another DIV is still selected. Passed."
-  );
 
   function doKeyPick(key, options = {}) {
     info("Key pressed. Waiting for element to be picked");

@@ -59,14 +59,14 @@ add_task(async function () {
   setupKeyBindingsTest();
 
   const tests = [
-    { id: "inspector", toolId: "inspector" },
     { id: "webconsole", toolId: "webconsole" },
     { id: "netmonitor", toolId: "netmonitor" },
     { id: "jsdebugger", toolId: "jsdebugger" },
   ];
 
-  // There are two possible keyboard shortcuts to open the inspector on macOS
+  // The inspector has keyboard shortcuts on macOS only, where it has two
   if (isMac) {
+    tests.unshift({ id: "inspector", toolId: "inspector" });
     tests.push({ id: "inspectorMac", toolId: "inspector" });
   }
 

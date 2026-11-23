@@ -1426,6 +1426,9 @@ class Toolbox extends EventEmitter {
 
     for (const item of Startup.KeyShortcuts) {
       const { id, toolId, shortcut, modifiers } = item;
+      if (!shortcut) {
+        continue;
+      }
       const electronKey = KeyShortcuts.parseXulKey(modifiers, shortcut);
 
       if (id == "browserConsole") {
@@ -2417,31 +2420,31 @@ class Toolbox extends EventEmitter {
 
   /**
    * Get the tooltip for the element picker button.
-   * It has multiple possible keyboard shortcuts for macOS.
+   * It has keyboard shortcuts on macOS only.
    *
    * @return {string}
    */
   #getPickerTooltip() {
+    const isFenix = this.isDebugTargetFenix();
+    if (Services.appinfo.OS !== "Darwin") {
+      return L10N.getStr(
+        isFenix
+          ? "toolbox.androidElementPicker.tooltip2"
+          : "toolbox.elementPicker.tooltip2"
+      );
+    }
+
     let shortcut = L10N.getStr("toolbox.elementPicker.key");
     shortcut = KeyShortcuts.parseElectronKey(shortcut);
     shortcut = KeyShortcuts.stringifyShortcut(shortcut);
     const shortcutMac = L10N.getStr("toolbox.elementPicker.mac.key");
-    const isMac = Services.appinfo.OS === "Darwin";
-
-    let label;
-    if (this.isDebugTargetFenix()) {
-      label = isMac
+    return L10N.getFormatStr(
+      isFenix
         ? "toolbox.androidElementPicker.mac.tooltip"
-        : "toolbox.androidElementPicker.tooltip";
-    } else {
-      label = isMac
-        ? "toolbox.elementPicker.mac.tooltip"
-        : "toolbox.elementPicker.tooltip";
-    }
-
-    return isMac
-      ? L10N.getFormatStr(label, shortcut, shortcutMac)
-      : L10N.getFormatStr(label, shortcut);
+        : "toolbox.elementPicker.mac.tooltip",
+      shortcut,
+      shortcutMac
+    );
   }
 
   async #listenAndApplyConfigurationPref() {
