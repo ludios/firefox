@@ -289,7 +289,7 @@ async function computeExpectedAndDoTest({
   }
 
   let expectedShown =
-    !checkPrivateItem || (!inPrivateWindow && separatePrivateDefaultUiEnabled);
+    checkPrivateItem && !inPrivateWindow && separatePrivateDefaultUiEnabled;
 
   let expectedLabel;
   let expectedBaseUrl;

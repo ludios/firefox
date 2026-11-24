@@ -47,6 +47,7 @@ support-files = ["searchTelemetryDomainExtraction.html"]
 ["browser_search_telemetry_categorization_timing.js"]
 
 ["browser_search_telemetry_content.js"]
+disabled = "The context menu no longer shows Search <engine> for <selection>"
 
 ["browser_search_telemetry_domain_categorization_ad_values.js"]
 support-files = ["searchTelemetryDomainCategorizationReporting.html"]

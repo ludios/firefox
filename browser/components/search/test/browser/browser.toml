@@ -26,6 +26,7 @@ support-files = ["test.html", "discovery.html", "426329.xml"]
 support-files = ["test.html", "test_windows1252.html"]
 
 ["browser_contentContextMenu.js"]
+disabled = "The context menu no longer shows Search <engine> for <selection>"
 support-files = ["browser_contentContextMenu.xhtml"]
 
 ["browser_contentContextMenu_visualSearch.js"]
@@ -52,8 +53,10 @@ support-files = [
 ["browser_contextmenu.js"]
 
 ["browser_contextmenu_privateWindow.js"]
+disabled = "The context menu no longer shows Search <engine> for <selection>"
 
 ["browser_contextmenu_whereToOpenLink.js"]
+disabled = "The context menu no longer shows Search <engine> for <selection>"
 
 ["browser_defaultPrivate_nimbus.js"]
 

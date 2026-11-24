@@ -2861,10 +2861,7 @@ export class nsContextMenu {
       searchTerms: selectedText,
       searchUrlType: lazy.SearchUtils.URL_TYPE.SEARCH,
     };
-    this.#updateSearchMenuitem({
-      ...opts,
-      menuitem: menuItem,
-    });
+    menuItem.hidden = true;
     this.#updateSearchMenuitem({
       ...opts,
       menuitem: menuItemPrivate,
