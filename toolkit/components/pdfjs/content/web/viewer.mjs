@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.246
- * pdfjsBuild = 25a762df5
+ * pdfjsVersion = 7.0.250
+ * pdfjsBuild = 86dc35cee
  */
 
 ;// ./web/ui_utils.js
@@ -11499,16 +11499,16 @@ class PDFPageDetailView extends BasePDFPageView {
     }
     const minDetailX = this.#detailArea.minX;
     const minDetailY = this.#detailArea.minY;
-    const maxDetailX = this.#detailArea.width + minDetailX;
-    const maxDetailY = this.#detailArea.height + minDetailY;
-    if (visibleArea.minX < minDetailX || visibleArea.minY < minDetailY || visibleArea.maxX > maxDetailX || visibleArea.maxY > maxDetailY) {
-      return true;
-    }
+    const maxDetailX = this.#detailArea.maxX;
+    const maxDetailY = this.#detailArea.maxY;
     const {
       width: maxWidth,
       height: maxHeight,
       scale
     } = this.pageView.viewport;
+    if (visibleArea.minX < minDetailX || visibleArea.minY < minDetailY || Math.min(visibleArea.maxX, maxWidth) > maxDetailX || Math.min(visibleArea.maxY, maxHeight) > maxDetailY) {
+      return true;
+    }
     if (this.#detailArea.scale !== scale) {
       return true;
     }
@@ -11555,13 +11555,12 @@ class PDFPageDetailView extends BasePDFPageView {
     const maxX = Math.min(viewport.width, visibleArea.maxX + overflowWidth);
     const minY = Math.max(0, visibleArea.minY - overflowHeight);
     const maxY = Math.min(viewport.height, visibleArea.maxY + overflowHeight);
-    const width = maxX - minX;
-    const height = maxY - minY;
     this.#detailArea = {
       minX,
       minY,
-      width,
-      height,
+      maxX,
+      maxY,
+      padded: overflowScale > 0,
       scale: viewport.scale
     };
     this.reset({
@@ -11581,15 +11580,15 @@ class PDFPageDetailView extends BasePDFPageView {
       }
     } = this.pageView;
     const {
-      width: aWidth,
-      height: aHeight,
       minX: aMinX,
-      minY: aMinY
+      minY: aMinY,
+      maxX: aMaxX,
+      maxY: aMaxY
     } = this.#detailArea;
     const detailMinX = aMinX / vWidth;
     const detailMinY = aMinY / vHeight;
-    const detailMaxX = (aMinX + aWidth) / vWidth;
-    const detailMaxY = (aMinY + aHeight) / vHeight;
+    const detailMaxX = aMaxX / vWidth;
+    const detailMaxY = aMaxY / vHeight;
     return {
       ...baseContext,
       operationsFilter(index) {
@@ -11642,16 +11641,24 @@ class PDFPageDetailView extends BasePDFPageView {
     const {
       pixelRatio
     } = OutputScale;
-    const transform = [pixelRatio, 0, 0, pixelRatio, -area.minX * pixelRatio, -area.minY * pixelRatio];
-    canvas.width = area.width * pixelRatio;
-    canvas.height = area.height * pixelRatio;
+    const box = canvasWrapper.getBoundingClientRect();
+    const boxWidth = Math.round(box.width * pixelRatio) || width * pixelRatio;
+    const boxHeight = Math.round(box.height * pixelRatio) || height * pixelRatio;
+    const [roundMin, roundMax] = area.padded ? [Math.ceil, Math.floor] : [Math.floor, Math.ceil];
+    const left = roundMin(area.minX / width * boxWidth);
+    const top = roundMin(area.minY / height * boxHeight);
+    const right = Math.max(left, roundMax(area.maxX / width * boxWidth));
+    const bottom = Math.max(top, roundMax(area.maxY / height * boxHeight));
+    const transform = [boxWidth / width, 0, 0, boxHeight / height, -left, -top];
+    canvas.width = right - left;
+    canvas.height = bottom - top;
     const {
       style
     } = canvas;
-    style.width = `${area.width * 100 / width}%`;
-    style.height = `${area.height * 100 / height}%`;
-    style.top = `${area.minY * 100 / height}%`;
-    style.left = `${area.minX * 100 / width}%`;
+    style.width = `${canvas.width * 100 / boxWidth}%`;
+    style.height = `${canvas.height * 100 / boxHeight}%`;
+    style.top = `${top * 100 / boxHeight}%`;
+    style.left = `${left * 100 / boxWidth}%`;
     const renderingPromise = this._drawCanvas(this._getRenderingContext(canvas, transform), () => {
       this._resetCanvas();
       this.canvas = prevCanvas;
@@ -13627,7 +13634,7 @@ class PDFViewer {
   #savedPageViews = null;
   #deletedPageNumbers = null;
   constructor(options) {
-    const viewerVersion = "7.0.246";
+    const viewerVersion = "7.0.250";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
