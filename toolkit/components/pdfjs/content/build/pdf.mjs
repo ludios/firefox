@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.245
- * pdfjsBuild = 128d59880
+ * pdfjsVersion = 7.0.246
+ * pdfjsBuild = 25a762df5
  */
 
 ;// ./src/shared/util.js
@@ -1641,8 +1641,8 @@ function setLayerDimensions(div, viewport, mustFlip = false, mustRotate = true) 
     const {
       style
     } = div;
-    const widthStr = `round(var(--total-scale-factor) * ${pageWidth}px, var(--scale-round-x))`,
-      heightStr = `round(var(--total-scale-factor) * ${pageHeight}px, var(--scale-round-y))`;
+    const widthStr = `round(down, var(--total-scale-factor) * ${pageWidth}px, var(--scale-round-x))`,
+      heightStr = `round(down, var(--total-scale-factor) * ${pageHeight}px, var(--scale-round-y))`;
     if (!mustFlip || viewport.rotation % 180 === 0) {
       style.width = widthStr;
       style.height = heightStr;
@@ -14697,7 +14697,7 @@ class RendererWorker {
         terminateEarly("TypedArray transfer test failed.");
         return;
       }
-      const apiVersion = "7.0.245";
+      const apiVersion = "7.0.246";
       if (apiVersion !== data.workerVersion) {
         terminateEarly(`The API version "${apiVersion}" does not match the Worker version "${data.workerVersion}".`);
         return;
@@ -15407,7 +15407,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "7.0.245",
+    apiVersion: "7.0.246",
     data,
     password,
     disableAutoFetch,
@@ -17127,8 +17127,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "7.0.245";
-const build = "128d59880";
+const version = "7.0.246";
+const build = "25a762df5";
 
 ;// ./src/display/editor/color_picker.js
 

@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.245
- * pdfjsBuild = 128d59880
+ * pdfjsVersion = 7.0.246
+ * pdfjsBuild = 25a762df5
  */
 export const __webpack_esm_ids__ = ["jpeg"];
 export const __webpack_esm_modules__ = {

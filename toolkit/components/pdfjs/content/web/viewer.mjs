@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.245
- * pdfjsBuild = 128d59880
+ * pdfjsVersion = 7.0.246
+ * pdfjsBuild = 25a762df5
  */
 
 ;// ./web/ui_utils.js
@@ -13417,6 +13417,7 @@ class PDFPageView extends BasePDFPageView {
       height
     } = viewport;
     this.#originalViewport = viewport;
+    const box = this.#needsRestrictedScaling ? null : canvasWrapper.getBoundingClientRect();
     const {
       canvas,
       prevCanvas
@@ -13425,8 +13426,8 @@ class PDFPageView extends BasePDFPageView {
     });
     canvas.setAttribute("role", "presentation");
     this.#hasRestrictedScaling = this.#needsRestrictedScaling;
-    canvas.width = Math.round(width * outputScale.sx);
-    canvas.height = Math.round(height * outputScale.sy);
+    canvas.width = box?.width ? Math.round(box.width * outputScale.sx) : Math.floor(width * outputScale.sx);
+    canvas.height = box?.height ? Math.round(box.height * outputScale.sy) : Math.floor(height * outputScale.sy);
     const sx = canvas.width / width;
     const sy = canvas.height / height;
     const transform = sx !== 1 || sy !== 1 ? [sx, 0, 0, sy, 0, 0] : null;
@@ -13626,7 +13627,7 @@ class PDFViewer {
   #savedPageViews = null;
   #deletedPageNumbers = null;
   constructor(options) {
-    const viewerVersion = "7.0.245";
+    const viewerVersion = "7.0.246";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
