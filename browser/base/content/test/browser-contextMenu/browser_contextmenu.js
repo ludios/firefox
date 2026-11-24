@@ -2602,9 +2602,9 @@ add_task(async function test_background_image() {
     // to split up NAVIGATION_ITEMS and bgImageItems:
     bgImageItems = [
       ...NAVIGATION_ITEMS.slice(0, 8),
-      ...bgImageItems.slice(0, 8),
+      ...bgImageItems.slice(0, 6),
       ...NAVIGATION_ITEMS.slice(8),
-      ...bgImageItems.slice(8),
+      ...bgImageItems.slice(6),
     ];
   } else {
     bgImageItems = NAVIGATION_ITEMS.concat(bgImageItems);
