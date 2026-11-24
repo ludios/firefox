@@ -913,7 +913,6 @@ export class nsContextMenu {
 
   initMiscItems() {
     let { window, document } = this;
-    // Use "Bookmark Link…" if on a link.
     let bookmarkPage = document.getElementById("context-bookmarkpage");
     this.showItem(
       bookmarkPage,
@@ -930,14 +929,7 @@ export class nsContextMenu {
       )
     );
 
-    this.showItem(
-      "context-bookmarklink",
-      (this.onLink &&
-        !this.onMailtoLink &&
-        !this.onTelLink &&
-        !this.onMozExtLink) ||
-        this.onPlainTextLink
-    );
+    this.showItem("context-bookmarklink", false);
     this.showItem("context-add-engine", this.shouldShowAddEngine());
     this.showItem("frame", this.inFrame);
 
