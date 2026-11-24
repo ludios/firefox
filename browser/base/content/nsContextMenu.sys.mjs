@@ -713,19 +713,8 @@ export class nsContextMenu {
     this.showItem("context-video-saveimage", this.onVideo);
     this.setItemAttr("context-savevideo", "disabled", !this.mediaURL);
     this.setItemAttr("context-saveaudio", "disabled", !this.mediaURL);
-    this.showItem("context-sendvideo", this.onVideo);
-    this.showItem("context-sendaudio", this.onAudio);
-    let mediaIsBlob = this.mediaURL.startsWith("blob:");
-    this.setItemAttr(
-      "context-sendvideo",
-      "disabled",
-      !this.mediaURL || mediaIsBlob
-    );
-    this.setItemAttr(
-      "context-sendaudio",
-      "disabled",
-      !this.mediaURL || mediaIsBlob
-    );
+    this.showItem("context-sendvideo", false);
+    this.showItem("context-sendaudio", false);
 
     if (
       Services.policies.status === Services.policies.ACTIVE &&
