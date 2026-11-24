@@ -49,6 +49,7 @@ pref("pdfjs.enableSelectionRendering", true);
 pref("pdfjs.enableSignatureEditor", false);
 pref("pdfjs.enableSignatureVerification", true);
 pref("pdfjs.enableSplitMerge", true);
+pref("pdfjs.enableSubpixelAA", true);
 pref("pdfjs.enableUpdatedAddImage", false);
 pref("pdfjs.enableWebGPU", true);
 pref("pdfjs.enableXfa", true);

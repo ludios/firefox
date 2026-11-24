@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.237
- * pdfjsBuild = b4f66a1ad
+ * pdfjsVersion = 7.0.244
+ * pdfjsBuild = 79f15d5ca
  */
 
 ;// ./src/shared/util.js
@@ -6704,10 +6704,13 @@ class ObjectHandler {
 
 class BaseCanvasFactory {
   #enableHWA = false;
+  #enableSubpixelAA = true;
   constructor({
-    enableHWA = false
+    enableHWA = false,
+    enableSubpixelAA = true
   }) {
     this.#enableHWA = enableHWA;
+    this.#enableSubpixelAA = enableSubpixelAA;
   }
   create(width, height) {
     if (width <= 0 || height <= 0) {
@@ -6746,7 +6749,7 @@ class BaseCanvasFactory {
   }
   getNoAlphaContext(canvas) {
     return canvas.getContext("2d", {
-      alpha: false,
+      alpha: !this.#enableSubpixelAA,
       willReadFrequently: !this.#enableHWA
     });
   }
@@ -7163,6 +7166,7 @@ class RendererMessageHandler {
   static #commonObjs = new PDFObjects();
   static #connection = null;
   static #enableHWA = false;
+  static #enableSubpixelAA = true;
   static #enableWebGPU = false;
   static #filterFactory;
   static #fontLoader = new FontLoader({
@@ -7398,6 +7402,7 @@ class RendererMessageHandler {
     handler.on("configure", data => {
       setVerbosityLevel(data.verbosity);
       this.#enableHWA = data.enableHWA;
+      this.#enableSubpixelAA = data.enableSubpixelAA;
       this.#enableWebGPU = data.enableWebGPU;
       if (this.#enableWebGPU) {
         initGPU();
@@ -7481,7 +7486,8 @@ class RendererMessageHandler {
         const objs = this.#getPageObjs(pageProxyId);
         const optionalContentConfig = OptionalContentConfig.fromSerializable(data.optionalContentConfig);
         const canvasFactory = this.#canvasFactory ??= new OffscreenCanvasFactory({
-          enableHWA: this.#enableHWA
+          enableHWA: this.#enableHWA,
+          enableSubpixelAA: this.#enableSubpixelAA
         });
         const filterFactory = this.#filterFactory ??= new WorkerFilterFactory();
         const annotationCanvases = hasAnnotationCanvasMap ? new Map() : null;
@@ -7606,7 +7612,7 @@ class RendererMessageHandler {
     this.#connection = null;
   }
   static #sendReady(handler) {
-    const workerVersion = "7.0.237";
+    const workerVersion = "7.0.244";
     const testObj = new Uint8Array();
     handler.send("ready", {
       testObj,

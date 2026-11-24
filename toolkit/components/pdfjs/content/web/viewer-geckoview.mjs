@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.237
- * pdfjsBuild = b4f66a1ad
+ * pdfjsVersion = 7.0.244
+ * pdfjsBuild = 79f15d5ca
  */
 
 ;// ./web/ui_utils.js
@@ -752,6 +752,9 @@ const defaultOptions = new Map([["allowedGlobalEvents", {
   value: "",
   kind: OptionKind.API
 }], ["enableHWA", {
+  value: true,
+  kind: OptionKind.API + OptionKind.PREFERENCE
+}], ["enableSubpixelAA", {
   value: true,
   kind: OptionKind.API + OptionKind.PREFERENCE
 }], ["enableWebGPU", {
@@ -9077,7 +9080,7 @@ class PDFViewer {
   #savedPageViews = null;
   #deletedPageNumbers = null;
   constructor(options) {
-    const viewerVersion = "7.0.237";
+    const viewerVersion = "7.0.244";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }

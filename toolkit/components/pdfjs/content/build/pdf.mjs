@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.237
- * pdfjsBuild = b4f66a1ad
+ * pdfjsVersion = 7.0.244
+ * pdfjsBuild = 79f15d5ca
  */
 
 ;// ./src/shared/util.js
@@ -12155,10 +12155,13 @@ for (const op in OPS) {
 
 class BaseCanvasFactory {
   #enableHWA = false;
+  #enableSubpixelAA = true;
   constructor({
-    enableHWA = false
+    enableHWA = false,
+    enableSubpixelAA = true
   }) {
     this.#enableHWA = enableHWA;
+    this.#enableSubpixelAA = enableSubpixelAA;
   }
   create(width, height) {
     if (width <= 0 || height <= 0) {
@@ -12197,7 +12200,7 @@ class BaseCanvasFactory {
   }
   getNoAlphaContext(canvas) {
     return canvas.getContext("2d", {
-      alpha: false,
+      alpha: !this.#enableSubpixelAA,
       willReadFrequently: !this.#enableHWA
     });
   }
@@ -12211,10 +12214,12 @@ class BaseCanvasFactory {
 class DOMCanvasFactory extends BaseCanvasFactory {
   constructor({
     ownerDocument = globalThis.document,
-    enableHWA = false
+    enableHWA = false,
+    enableSubpixelAA = true
   }) {
     super({
-      enableHWA
+      enableHWA,
+      enableSubpixelAA
     });
     this._document = ownerDocument;
   }
@@ -14547,6 +14552,7 @@ class WorkerRenderTask {
 class RendererWorker {
   #capability = createPromiseCapability();
   #enableHWA;
+  #enableSubpixelAA;
   #enableWebGPU;
   #messageHandler = null;
   #operatorListId = 0;
@@ -14567,10 +14573,12 @@ class RendererWorker {
     port = null,
     verbosity = getVerbosityLevel(),
     enableHWA = false,
+    enableSubpixelAA = true,
     enableWebGPU = false
   } = {}) {
     this.verbosity = verbosity;
     this.#enableHWA = enableHWA;
+    this.#enableSubpixelAA = enableSubpixelAA;
     this.#enableWebGPU = enableWebGPU;
     if (port) {
       this.#initializeFromPort(port);
@@ -14603,6 +14611,7 @@ class RendererWorker {
     this.#messageHandler.send("configure", {
       verbosity: this.verbosity,
       enableHWA: this.#enableHWA,
+      enableSubpixelAA: this.#enableSubpixelAA,
       enableWebGPU: this.#enableWebGPU
     });
     const pendingMessages = this.#pendingMessages;
@@ -14688,7 +14697,7 @@ class RendererWorker {
         terminateEarly("TypedArray transfer test failed.");
         return;
       }
-      const apiVersion = "7.0.237";
+      const apiVersion = "7.0.244";
       if (apiVersion !== data.workerVersion) {
         terminateEarly(`The API version "${apiVersion}" does not match the Worker version "${data.workerVersion}".`);
         return;
@@ -15349,6 +15358,7 @@ function getDocument(src = {}) {
   const FilterFactory = src.FilterFactory || DOMFilterFactory;
   const BinaryDataFactory = src.BinaryDataFactory || (/* inlined export .DOMBinaryDataFactory */null);
   const enableHWA = src.enableHWA !== false;
+  const enableSubpixelAA = src.enableSubpixelAA !== false;
   const enableWebGPU = src.enableWebGPU !== false;
   if (enableWebGPU) {
     initGPU();
@@ -15363,7 +15373,8 @@ function getDocument(src = {}) {
   const transportFactory = {
     canvasFactory: new CanvasFactory({
       ownerDocument,
-      enableHWA
+      enableHWA,
+      enableSubpixelAA
     }),
     filterFactory: new FilterFactory({
       docId,
@@ -15382,6 +15393,7 @@ function getDocument(src = {}) {
     const rendererWorker = RendererWorker.create({
       verbosity,
       enableHWA,
+      enableSubpixelAA,
       enableWebGPU,
       ports: GlobalWorkerOptions.rendererPorts
     });
@@ -15395,7 +15407,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "7.0.237",
+    apiVersion: "7.0.244",
     data,
     password,
     disableAutoFetch,
@@ -17115,8 +17127,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "7.0.237";
-const build = "b4f66a1ad";
+const version = "7.0.244";
+const build = "79f15d5ca";
 
 ;// ./src/display/editor/color_picker.js
 
