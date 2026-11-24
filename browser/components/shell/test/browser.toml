@@ -102,6 +102,7 @@ run-if = [
 tags = "os_integration"
 
 ["browser_setDesktopBackgroundPreview.js"]
+disabled = "The context menu no longer shows Set Image as Desktop Background"
 support-files = ["large.png", "canvas.html"]
 tags = "os_integration"
 
