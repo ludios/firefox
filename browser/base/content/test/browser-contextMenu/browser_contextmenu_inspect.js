@@ -64,6 +64,44 @@ add_task(async function test_contextmenu_inspect() {
   });
 });
 
+add_task(async function test_contextmenu_inspect_a11y_force_disabled() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["devtools.everOpened", true]],
+  });
+  let contextMenu = document.getElementById("contentAreaContextMenu");
+  await BrowserTestUtils.withNewTab("about:blank", async browser => {
+    for (let forceDisabled of [0, 1]) {
+      await SpecialPowers.pushPrefEnv({
+        set: [["accessibility.force_disabled", forceDisabled]],
+      });
+      let promisePopupShown = BrowserTestUtils.waitForEvent(
+        contextMenu,
+        "popupshown"
+      );
+      let promisePopupHidden = BrowserTestUtils.waitForEvent(
+        contextMenu,
+        "popuphidden"
+      );
+      await BrowserTestUtils.synthesizeMouse(
+        "body",
+        2,
+        2,
+        { type: "contextmenu", button: 2 },
+        browser
+      );
+      await promisePopupShown;
+      is(
+        document.getElementById("context-inspect-a11y").hidden,
+        forceDisabled == 1,
+        `A11y should be ${forceDisabled ? "hidden" : "shown"} when accessibility.force_disabled is ${forceDisabled}.`
+      );
+      contextMenu.hidePopup();
+      await promisePopupHidden;
+      await SpecialPowers.popPrefEnv();
+    }
+  });
+});
+
 add_task(async function test_contextmenu_inspect_system_principal() {
   let contextMenu = document.getElementById("contentAreaContextMenu");
   await BrowserTestUtils.withNewTab("about:preferences", async browser => {

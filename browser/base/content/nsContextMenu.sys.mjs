@@ -892,6 +892,7 @@ export class nsContextMenu {
       showInspect &&
       Services.prefs.getBoolPref("devtools.accessibility.enabled", false) &&
       Services.prefs.getBoolPref("devtools.enabled", true) &&
+      Services.prefs.getIntPref("accessibility.force_disabled", 0) < 1 &&
       (Services.prefs.getBoolPref("devtools.everOpened", false) ||
         // Note: this is a legacy usecase, we will remove it in bug 1695257,
         // once existing users have had time to set devtools.everOpened
