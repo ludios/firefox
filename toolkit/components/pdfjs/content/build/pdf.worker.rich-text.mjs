@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.232
- * pdfjsBuild = aa7aa9098
+ * pdfjsVersion = 7.0.237
+ * pdfjsBuild = b4f66a1ad
  */
 export const __webpack_esm_ids__ = ["rich-text"];
 export const __webpack_esm_modules__ = {

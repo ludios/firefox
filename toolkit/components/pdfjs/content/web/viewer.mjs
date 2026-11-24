@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.232
- * pdfjsBuild = aa7aa9098
+ * pdfjsVersion = 7.0.237
+ * pdfjsBuild = b4f66a1ad
  */
 
 ;// ./web/ui_utils.js
@@ -3220,26 +3220,22 @@ class AnnotationEditorParams {
 
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-function applyPageTint(viewer, foreground, background) {
-  if (!CSS.supports("color", foreground) || !CSS.supports("color", background)) {
-    console.error(`applyPageTint: invalid colors "${foreground}", "${background}".`);
+function applyPageTint(foreground, background) {
+  const isHexColor = color => /^#[\da-f]{6}$/i.test(color);
+  if (!isHexColor(foreground) || !isHexColor(background)) {
+    console.error(`applyPageTint: expected #rrggbb colors, got "${foreground}", "${background}".`);
+    return;
+  }
+  const fg = getRGB(foreground),
+    bg = getRGB(background);
+  if (fg.join() === "0,0,0" && bg.join() === "255,255,255") {
     return;
   }
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("width", 0);
   svg.setAttribute("height", 0);
+  svg.setAttribute("aria-hidden", true);
   svg.style.position = "absolute";
-  document.body.append(svg);
-  const toRGB = color => {
-    svg.style.color = color;
-    return getRGB(getComputedStyle(svg).color);
-  };
-  const fg = toRGB(foreground),
-    bg = toRGB(background);
-  if (fg.join() === "0,0,0" && bg.join() === "255,255,255") {
-    svg.remove();
-    return;
-  }
   const filter = document.createElementNS(SVG_NS, "filter");
   filter.id = "pageTintFilter";
   filter.setAttribute("color-interpolation-filters", "sRGB");
@@ -3253,8 +3249,8 @@ function applyPageTint(viewer, foreground, background) {
   }
   filter.append(transfer);
   svg.append(filter);
+  document.body.append(svg);
   docStyle.setProperty("--page-tint-filter", "url(#pageTintFilter)");
-  viewer.style.setProperty("--page-bg-color", background);
 }
 
 ;// ./web/caret_browsing.js
@@ -13640,7 +13636,7 @@ class PDFViewer {
   #savedPageViews = null;
   #deletedPageNumbers = null;
   constructor(options) {
-    const viewerVersion = "7.0.232";
+    const viewerVersion = "7.0.237";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
@@ -18073,7 +18069,7 @@ const PDFViewerApplication = {
       foreground: AppOptions.get("pageColorsForeground")
     } : null;
     if (!hasForcedColors) {
-      applyPageTint(viewer, AppOptions.get("pageTintForeground"), AppOptions.get("pageTintBackground"));
+      applyPageTint(AppOptions.get("pageTintForeground"), AppOptions.get("pageTintBackground"));
     }
     const enableSplitMerge = AppOptions.get("enableSplitMerge");
     let altTextManager;

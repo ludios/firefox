@@ -903,10 +903,6 @@
       }
     }
 
-    &:has(> canvas.annotationContent) {
-      filter: var(--page-tint-filter, none);
-    }
-
     .overlaidText {
       position: absolute;
       top: 0;
@@ -1646,7 +1642,6 @@
     overflow: hidden;
     width: 100%;
     height: 100%;
-    filter: var(--page-tint-filter, none);
 
     canvas {
       position: absolute;
@@ -1696,6 +1691,7 @@
   border: var(--page-border);
   background-clip: content-box;
   background-color: var(--page-bg-color, rgb(255 255 255));
+  filter: var(--page-tint-filter, none);
   &:has(> .canvasWrapper > canvas[role="presentation"]) {
     background-color: transparent;
   }

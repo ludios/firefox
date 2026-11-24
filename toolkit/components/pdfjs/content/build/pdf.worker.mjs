@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.232
- * pdfjsBuild = aa7aa9098
+ * pdfjsVersion = 7.0.237
+ * pdfjsBuild = b4f66a1ad
  */
 /******/ var __webpack_modules__ = ({
 
@@ -47245,7 +47245,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = "7.0.232";
+    const workerVersion = "7.0.237";
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match the Worker version "${workerVersion}".`);
     }
