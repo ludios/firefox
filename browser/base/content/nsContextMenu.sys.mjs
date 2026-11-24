@@ -2862,7 +2862,10 @@ export class nsContextMenu {
       searchTerms: selectedText,
       searchUrlType: lazy.SearchUtils.URL_TYPE.SEARCH,
     };
-    menuItem.hidden = true;
+    this.#updateSearchMenuitem({
+      ...opts,
+      menuitem: menuItem,
+    });
     this.#updateSearchMenuitem({
       ...opts,
       menuitem: menuItemPrivate,
@@ -2877,6 +2880,8 @@ export class nsContextMenu {
       "ensureHidden",
       menuItem.hidden && this.inFrame
     );
+    // Hide it only after the divider logic above, which keys on its visibility.
+    menuItem.hidden = true;
 
     // If we're not showing the menu items, we can skip formatting the labels.
     if (menuItem.hidden && menuItemPrivate.hidden) {
