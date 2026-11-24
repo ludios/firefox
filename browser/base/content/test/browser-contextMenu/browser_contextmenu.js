@@ -486,8 +486,6 @@ add_task(async function test_image() {
         true,
         "context-copyimage",
         true,
-        "context-sendimage",
-        true,
         ...getTextRecognitionItems(),
         ...(Services.prefs.getBoolPref("browser.menu.showViewImageInfo", false)
           ? ["context-viewimageinfo", true]
@@ -1435,8 +1433,6 @@ add_task(async function test_image_in_iframe() {
       true,
       "context-copyimage",
       true,
-      "context-sendimage",
-      true,
       ...getTextRecognitionItems(),
       ...(Services.prefs.getBoolPref("browser.menu.showViewImageInfo", false)
         ? ["context-viewimageinfo", true]
@@ -2142,8 +2138,6 @@ add_task(async function test_imagelink() {
     true,
     "context-copyimage",
     true,
-    "context-sendimage",
-    true,
     ...getTextRecognitionItems(),
     ...(Services.prefs.getBoolPref("browser.menu.showViewImageInfo", false)
       ? ["context-viewimageinfo", true]
@@ -2255,8 +2249,6 @@ add_task(async function test_longdesc() {
       "context-copyimage-contents",
       true,
       "context-copyimage",
-      true,
-      "context-sendimage",
       true,
       ...getTextRecognitionItems(),
       ...(Services.prefs.getBoolPref("browser.menu.showViewImageInfo", false)
@@ -2648,8 +2640,6 @@ add_task(async function test_background_image() {
     "context-viewimage",
     true,
     "context-copyimage",
-    true,
-    "context-sendimage",
     true,
     "---",
     null,

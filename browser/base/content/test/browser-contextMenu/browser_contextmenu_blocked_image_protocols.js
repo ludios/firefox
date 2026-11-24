@@ -55,8 +55,8 @@ add_task(async function test_blocked() {
         let saveImageItem = document.getElementById("context-saveimage");
         ok(saveImageItem.hidden, "Save Image menu item should be hidden");
 
-        let sendImageItem = document.getElementById("context-sendimage");
-        ok(!sendImageItem.hidden, "Send Image menu item should be shown");
+        let copyImageItem = document.getElementById("context-copyimage");
+        ok(!copyImageItem.hidden, "Copy Image Link menu item should be shown");
 
         contextMenu.hidePopup();
       }

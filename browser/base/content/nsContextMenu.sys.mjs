@@ -816,8 +816,7 @@ export class nsContextMenu {
         lazy.TEXT_RECOGNITION_ENABLED
     );
 
-    // Send media URL (but not for canvas, since it's a big data: URL)
-    this.showItem("context-sendimage", this.onImage || showBGImage);
+    this.showItem("context-sendimage", false);
 
     // View Image Info defaults to false, user can enable
     var showViewImageInfo =
