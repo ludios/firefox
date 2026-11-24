@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.244
- * pdfjsBuild = 79f15d5ca
+ * pdfjsVersion = 7.0.245
+ * pdfjsBuild = 128d59880
  */
 export const __webpack_esm_ids__ = ["qcms"];
 export const __webpack_esm_modules__ = {

@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.244
- * pdfjsBuild = 79f15d5ca
+ * pdfjsVersion = 7.0.245
+ * pdfjsBuild = 128d59880
  */
 
 ;// ./web/ui_utils.js
@@ -12717,8 +12717,7 @@ class PDFPageView extends BasePDFPageView {
   #needsRestrictedScaling = false;
   #originalViewport = null;
   #previousRotation = null;
-  #sfx = [1, 1];
-  #sfy = [1, 1];
+  #devicePixel = 1;
   #textLayerMode = TextLayerMode.ENABLE;
   #userUnit = 1;
   #useThumbnailCanvas = {
@@ -13215,24 +13214,12 @@ class PDFPageView extends BasePDFPageView {
       outputScale.sx /= factor;
       outputScale.sy /= factor;
     }
-    const sfx = approximateFraction(outputScale.sx),
-      sfy = approximateFraction(outputScale.sy);
-    if (this.#sfx[1] !== sfx[1]) {
-      if (sfx[1] !== 1) {
-        div.style.setProperty("--scale-round-x", `${sfx[1]}px`);
-      } else {
-        div.style.removeProperty("--scale-round-x");
-      }
+    const devicePixel = 1 / OutputScale.pixelRatio;
+    if (this.#devicePixel !== devicePixel) {
+      this.#devicePixel = devicePixel;
+      div.style.setProperty("--scale-round-x", `${devicePixel}px`);
+      div.style.setProperty("--scale-round-y", `${devicePixel}px`);
     }
-    if (this.#sfy[1] !== sfy[1]) {
-      if (sfy[1] !== 1) {
-        div.style.setProperty("--scale-round-y", `${sfy[1]}px`);
-      } else {
-        div.style.removeProperty("--scale-round-y");
-      }
-    }
-    this.#sfx = sfx;
-    this.#sfy = sfy;
   }
   cancelRendering({
     keepAnnotationLayer = false,
@@ -13438,8 +13425,8 @@ class PDFPageView extends BasePDFPageView {
     });
     canvas.setAttribute("role", "presentation");
     this.#hasRestrictedScaling = this.#needsRestrictedScaling;
-    canvas.width = floorToDivide(calcRound(width * outputScale.sx), this.#sfx[0]);
-    canvas.height = floorToDivide(calcRound(height * outputScale.sy), this.#sfy[0]);
+    canvas.width = Math.round(width * outputScale.sx);
+    canvas.height = Math.round(height * outputScale.sy);
     const sx = canvas.width / width;
     const sy = canvas.height / height;
     const transform = sx !== 1 || sy !== 1 ? [sx, 0, 0, sy, 0, 0] : null;
@@ -13639,7 +13626,7 @@ class PDFViewer {
   #savedPageViews = null;
   #deletedPageNumbers = null;
   constructor(options) {
-    const viewerVersion = "7.0.244";
+    const viewerVersion = "7.0.245";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }

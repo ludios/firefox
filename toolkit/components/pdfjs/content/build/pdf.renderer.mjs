@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.244
- * pdfjsBuild = 79f15d5ca
+ * pdfjsVersion = 7.0.245
+ * pdfjsBuild = 128d59880
  */
 
 ;// ./src/shared/util.js
@@ -7612,7 +7612,7 @@ class RendererMessageHandler {
     this.#connection = null;
   }
   static #sendReady(handler) {
-    const workerVersion = "7.0.244";
+    const workerVersion = "7.0.245";
     const testObj = new Uint8Array();
     handler.send("ready", {
       testObj,
