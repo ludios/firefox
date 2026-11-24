@@ -100,6 +100,7 @@ add_task(async function test_contextmenu_inspect_a11y_force_disabled() {
       await SpecialPowers.popPrefEnv();
     }
   });
+  await SpecialPowers.popPrefEnv();
 });
 
 add_task(async function test_contextmenu_inspect_system_principal() {
