@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.229
- * pdfjsBuild = 32fb05b3b
+ * pdfjsVersion = 7.0.232
+ * pdfjsBuild = aa7aa9098
  */
 export const __webpack_esm_ids__ = ["writer"];
 export const __webpack_esm_modules__ = {

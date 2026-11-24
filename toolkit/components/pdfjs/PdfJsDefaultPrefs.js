@@ -62,6 +62,8 @@ pref("pdfjs.imagesRightClickMinSize", 16);
 pref("pdfjs.newTextLayerMode", 1);
 pref("pdfjs.pageColorsBackground", "Canvas");
 pref("pdfjs.pageColorsForeground", "CanvasText");
+pref("pdfjs.pageTintBackground", "#ffffff");
+pref("pdfjs.pageTintForeground", "#000000");
 pref("pdfjs.pdfBugEnabled", false);
 pref("pdfjs.postMessageAfterPrintCallback", false);
 pref("pdfjs.rendererWorkerCount", 1);
