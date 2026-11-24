@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.250
- * pdfjsBuild = 86dc35cee
+ * pdfjsVersion = 7.0.252
+ * pdfjsBuild = 556f28ebf
  */
 
 ;// ./src/shared/util.js
@@ -14697,7 +14697,7 @@ class RendererWorker {
         terminateEarly("TypedArray transfer test failed.");
         return;
       }
-      const apiVersion = "7.0.250";
+      const apiVersion = "7.0.252";
       if (apiVersion !== data.workerVersion) {
         terminateEarly(`The API version "${apiVersion}" does not match the Worker version "${data.workerVersion}".`);
         return;
@@ -15407,7 +15407,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "7.0.250",
+    apiVersion: "7.0.252",
     data,
     password,
     disableAutoFetch,
@@ -17127,8 +17127,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "7.0.250";
-const build = "86dc35cee";
+const version = "7.0.252";
+const build = "556f28ebf";
 
 ;// ./src/display/editor/color_picker.js
 

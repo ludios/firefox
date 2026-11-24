@@ -20,8 +20,8 @@
  */
 
 /**
- * pdfjsVersion = 7.0.250
- * pdfjsBuild = 86dc35cee
+ * pdfjsVersion = 7.0.252
+ * pdfjsBuild = 556f28ebf
  */
 
 ;// ./web/ui_utils.js
@@ -11458,9 +11458,13 @@ class DrawLayerBuilder {
 
 
 
+const RENDERING_CANCELLED_DURATION = 150;
 class PDFPageDetailView extends BasePDFPageView {
   #detailArea = null;
-  renderingCancelled = false;
+  #renderingCancelledTime = -Infinity;
+  get renderingCancelled() {
+    return performance.now() - this.#renderingCancelledTime < RENDERING_CANCELLED_DURATION;
+  }
   constructor({
     pageView
   }) {
@@ -11479,16 +11483,16 @@ class PDFPageDetailView extends BasePDFPageView {
     return super.renderingState;
   }
   set renderingState(state) {
-    this.renderingCancelled = false;
+    this.#renderingCancelledTime = -Infinity;
     super.renderingState = state;
   }
   reset({
     keepCanvas = false
   } = {}) {
-    const renderingCancelled = this.renderingCancelled || this.renderingState === RenderingStates.RUNNING || this.renderingState === RenderingStates.PAUSED;
+    const renderingCancelledTime = this.renderingState === RenderingStates.RUNNING || this.renderingState === RenderingStates.PAUSED ? performance.now() : this.#renderingCancelledTime;
     this.cancelRendering();
     this.renderingState = RenderingStates.INITIAL;
-    this.renderingCancelled = renderingCancelled;
+    this.#renderingCancelledTime = renderingCancelledTime;
     if (!keepCanvas) {
       this._resetCanvas();
     }
@@ -13634,7 +13638,7 @@ class PDFViewer {
   #savedPageViews = null;
   #deletedPageNumbers = null;
   constructor(options) {
-    const viewerVersion = "7.0.250";
+    const viewerVersion = "7.0.252";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
@@ -14907,7 +14911,9 @@ class PDFViewer {
     const visiblePages = currentlyVisiblePages || this._getVisiblePages();
     const scrollAhead = this.#getScrollAhead(visiblePages);
     const preRenderExtra = this._spreadMode !== SpreadMode.NONE && this._scrollMode !== ScrollMode.HORIZONTAL;
-    const ignoreDetailViews = this.#scaleTimeoutId !== null || this.#scrollTimeoutId !== null && visiblePages.views.some(page => page.detailView?.renderingCancelled);
+    const ignoreDetailViews = this.#scaleTimeoutId !== null || this.#scrollTimeoutId !== null && visiblePages.views.some(({
+      view
+    }) => view.detailView?.renderingCancelled);
     const pageView = this.renderingQueue.getHighestPriority(visiblePages, this._pages, scrollAhead, preRenderExtra, ignoreDetailViews);
     if (pageView) {
       this.#ensurePdfPageLoaded(pageView).then(() => {
